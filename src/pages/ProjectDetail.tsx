@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, FileText, Brain, AlertTriangle, TrendingUp, Download } from "lucide-react";
@@ -37,39 +38,14 @@ const ProjectDetail = () => {
     // Mock project data - in real app this would fetch from API
     const mockProject: Project = {
       id: id || "1",
-      name: "AI Leadership Summit 2024",
-      description: "Interviews with AI thought leaders on the future of artificial intelligence",
-      transcriptCount: 3,
-      createdAt: new Date("2024-01-15"),
-      lastAnalyzed: new Date("2024-01-20"),
+      name: "New Project",
+      description: "Upload transcripts to analyze themes and disagreements",
+      transcriptCount: 0,
+      createdAt: new Date(),
     };
     
-    const mockTranscripts: Transcript[] = [
-      {
-        id: "1",
-        filename: "geoffrey-hinton-interview.pdf",
-        uploadedAt: new Date("2024-01-15"),
-        size: 2.4,
-        content: "Geoffrey Hinton discusses the rapid advancement of AI and expresses concerns about the pace of development. He believes we may be moving too fast without proper safety measures in place. The potential for AGI within the next decade is very real, but we need to slow down and focus more on alignment research before pushing capabilities further. The economic disruption will be unprecedented, affecting jobs across all sectors much faster than previous technological revolutions."
-      },
-      {
-        id: "2",
-        filename: "yann-lecun-discussion.pdf",
-        uploadedAt: new Date("2024-01-16"),
-        size: 1.8,
-        content: "Yann LeCun argues that current fears about AI development are overblown. He believes the current pace of development is necessary and that slowing down could mean missing crucial breakthroughs. Competition drives innovation, and we shouldn't artificially constrain progress. He disagrees with doomsday scenarios and thinks the risks are manageable with proper research and gradual development. Open source development is crucial for democratic participation in AI progress."
-      },
-      {
-        id: "3",
-        filename: "andrew-ng-insights.pdf",
-        uploadedAt: new Date("2024-01-17"),
-        size: 3.1,
-        content: "Andrew Ng focuses on the practical applications of AI and the need for better AI governance frameworks. He emphasizes that international cooperation is essential for managing existential risks. The regulatory landscape needs to be adaptive since we can't predict all future challenges. He supports a balanced approach between innovation and safety, advocating for new models of distributing AI productivity gains across society. Education and workforce retraining will be critical for managing the economic transition."
-      },
-    ];
-    
     setProject(mockProject);
-    setTranscripts(mockTranscripts);
+    setTranscripts([]);
   }, [id]);
 
   const handleFileUpload = (files: File[]) => {
@@ -82,6 +58,14 @@ const ProjectDetail = () => {
     }));
     
     setTranscripts([...transcripts, ...newTranscripts]);
+    
+    // Update project transcript count
+    if (project) {
+      setProject({
+        ...project,
+        transcriptCount: transcripts.length + newTranscripts.length
+      });
+    }
     
     toast({
       title: "Files uploaded successfully",
