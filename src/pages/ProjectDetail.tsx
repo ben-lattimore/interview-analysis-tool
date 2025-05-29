@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, FileText, Brain, AlertTriangle, TrendingUp, Download } from "lucide-react";
+import { ArrowLeft, FileText, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import FileUpload from "@/components/FileUpload";
 import AIAnalysisResults from "@/components/AIAnalysisResults";
 import { useToast } from "@/hooks/use-toast";
 import TranscriptTextInput from "@/components/TranscriptTextInput";
@@ -39,7 +39,7 @@ const ProjectDetail = () => {
     const mockProject: Project = {
       id: id || "1",
       name: "New Project",
-      description: "Upload transcripts to analyze themes and disagreements",
+      description: "Add transcripts to analyze themes and disagreements",
       transcriptCount: 0,
       createdAt: new Date(),
     };
@@ -47,31 +47,6 @@ const ProjectDetail = () => {
     setProject(mockProject);
     setTranscripts([]);
   }, [id]);
-
-  const handleFileUpload = (files: File[]) => {
-    const newTranscripts = files.map(file => ({
-      id: Date.now().toString() + Math.random(),
-      filename: file.name,
-      uploadedAt: new Date(),
-      size: Math.round((file.size / 1024 / 1024) * 10) / 10, // MB
-      content: "Uploaded transcript content would be extracted here..."
-    }));
-    
-    setTranscripts([...transcripts, ...newTranscripts]);
-    
-    // Update project transcript count
-    if (project) {
-      setProject({
-        ...project,
-        transcriptCount: transcripts.length + newTranscripts.length
-      });
-    }
-    
-    toast({
-      title: "Files uploaded successfully",
-      description: `${files.length} transcript(s) have been added to your project.`,
-    });
-  };
 
   const handleTranscriptAdd = (transcriptData: { filename: string; content: string }) => {
     const newTranscript = {
@@ -136,24 +111,8 @@ const ProjectDetail = () => {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Upload & Files */}
+          {/* Left Column - Text Input & Files */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Upload Section */}
-            <Card className="bg-white border-slate-200">
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg font-semibold text-slate-900">
-                  <Upload className="w-5 h-5 mr-2 text-blue-600" />
-                  Upload Transcripts
-                </CardTitle>
-                <CardDescription>
-                  Add PDF transcripts to analyze themes and disagreements
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <FileUpload onFileUpload={handleFileUpload} />
-              </CardContent>
-            </Card>
-
             {/* Text Input Section */}
             <TranscriptTextInput onTranscriptAdd={handleTranscriptAdd} />
 
@@ -182,7 +141,7 @@ const ProjectDetail = () => {
                               {transcript.filename}
                             </p>
                             <p className="text-xs text-slate-500">
-                              {transcript.size} {transcript.size < 1 ? 'KB' : 'MB'} • {transcript.uploadedAt.toLocaleDateString()}
+                              {transcript.size} KB • {transcript.uploadedAt.toLocaleDateString()}
                             </p>
                           </div>
                         </div>
