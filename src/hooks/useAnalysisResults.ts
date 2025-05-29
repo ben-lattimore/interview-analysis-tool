@@ -83,12 +83,12 @@ export const useAnalysisResults = (projectId: string) => {
     try {
       const { data, error } = await supabase
         .from('analysis_results')
-        .insert([{
+        .insert({
           project_id: projectId,
           key_themes: analysisData.keyThemes,
           disagreements: analysisData.disagreements,
           transcript_count: transcriptCount,
-        }])
+        })
         .select()
         .single();
 
