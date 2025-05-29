@@ -9,9 +9,9 @@ interface Project {
   id: string;
   name: string;
   description: string;
-  transcriptCount: number;
-  createdAt: Date;
-  lastAnalyzed?: Date;
+  transcript_count: number;
+  created_at: string;
+  last_analyzed?: string;
 }
 
 interface ProjectCardProps {
@@ -21,7 +21,8 @@ interface ProjectCardProps {
 const ProjectCard = ({ project }: ProjectCardProps) => {
   const navigate = useNavigate();
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric', 
@@ -45,7 +46,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
               {project.description}
             </CardDescription>
           </div>
-          {project.lastAnalyzed && (
+          {project.last_analyzed && (
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               Analyzed
             </Badge>
@@ -58,19 +59,19 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
               <FileText className="w-4 h-4 mr-1" />
-              <span>{project.transcriptCount} transcripts</span>
+              <span>{project.transcript_count} transcripts</span>
             </div>
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
-              <span>{formatDate(project.createdAt)}</span>
+              <span>{formatDate(project.created_at)}</span>
             </div>
           </div>
         </div>
         
-        {project.lastAnalyzed && (
+        {project.last_analyzed && (
           <div className="flex items-center text-xs text-green-600 mb-4">
             <BarChart3 className="w-3 h-3 mr-1" />
-            <span>Last analyzed {formatDate(project.lastAnalyzed)}</span>
+            <span>Last analyzed {formatDate(project.last_analyzed)}</span>
           </div>
         )}
         

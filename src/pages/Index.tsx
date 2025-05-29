@@ -5,40 +5,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ProjectCard from "@/components/ProjectCard";
 import CreateProjectModal from "@/components/CreateProjectModal";
-import { useToast } from "@/hooks/use-toast";
-
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  transcriptCount: number;
-  createdAt: Date;
-  lastAnalyzed?: Date;
-}
+import { useProjects } from "@/hooks/useProjects";
 
 const Index = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  
+  const { projects, loading, createProject } = useProjects();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { toast } = useToast();
 
-  const handleCreateProject = (projectData: { name: string; description: string }) => {
-    const newProject: Project = {
-      id: Date.now().toString(),
-      name: projectData.name,
-      description: projectData.description,
-      transcriptCount: 0,
-      createdAt: new Date(),
-    };
-    
-    setProjects([newProject, ...projects]);
-    setIsCreateModalOpen(false);
-    
-    toast({
-      title: "Project created successfully",
-      description: `${projectData.name} is ready for transcript uploads.`,
-    });
+  const handleCreateProject = async (projectData: { name: string; description: string }) => {
+    const result = await createProject(projectData);
+    if (result) {
+      setIsCreateModalOpen(false);
+    }
   };
+
+  const totalTranscripts = projects.reduce((sum, project) => sum + project.transcript_count, 0);
+  const analyzedProjects = projects.filter(p => p.last_analyzed).length;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-slate-600">Loading projects...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -85,9 +74,7 @@ const Index = () => {
               <Users className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
-                {projects.reduce((sum, project) => sum + project.transcriptCount, 0)}
-              </div>
+              <div className="text-2xl font-bold text-slate-900">{totalTranscripts}</div>
             </CardContent>
           </Card>
           
@@ -97,9 +84,7 @@ const Index = () => {
               <TrendingUp className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
-                {projects.filter(p => p.lastAnalyzed).length * 2}
-              </div>
+              <div className="text-2xl font-bold text-slate-900">{analyzedProjects * 2}</div>
             </CardContent>
           </Card>
         </div>
