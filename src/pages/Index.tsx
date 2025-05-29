@@ -17,24 +17,7 @@ interface Project {
 }
 
 const Index = () => {
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: "1",
-      name: "AI Leadership Summit 2024",
-      description: "Interviews with AI thought leaders on the future of artificial intelligence",
-      transcriptCount: 8,
-      createdAt: new Date("2024-01-15"),
-      lastAnalyzed: new Date("2024-01-20"),
-    },
-    {
-      id: "2",
-      name: "Climate Change Perspectives",
-      description: "Expert interviews on climate solutions and policy approaches",
-      transcriptCount: 12,
-      createdAt: new Date("2024-02-01"),
-      lastAnalyzed: new Date("2024-02-05"),
-    },
-  ]);
+  const [projects, setProjects] = useState<Project[]>([]);
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { toast } = useToast();
