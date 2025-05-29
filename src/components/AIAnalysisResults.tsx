@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { TrendingUp, AlertTriangle, Users, BookOpen, Quote, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAnalysisResults } from "@/hooks/useAnalysisResults";
 
 interface QuoteObject {
   text: string;
@@ -47,13 +47,25 @@ interface AIAnalysisResultsProps {
     filename: string;
     content?: string;
   }>;
+  projectId: string;
 }
 
-const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
-  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) => {
+  const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { analysisResult, saveAnalysisResult } = useAnalysisResults(projectId);
+
+  // Load existing analysis from database on component mount
+  useEffect(() => {
+    if (analysisResult && analysisResult.key_themes && analysisResult.disagreements) {
+      setCurrentAnalysis({
+        keyThemes: analysisResult.key_themes,
+        disagreements: analysisResult.disagreements,
+      });
+    }
+  }, [analysisResult]);
 
   const runAnalysis = async () => {
     if (!transcripts || transcripts.length === 0) {
@@ -79,11 +91,17 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
         throw new Error(data.error);
       }
 
-      setAnalysis(data);
-      toast({
-        title: "Analysis Complete",
-        description: "AI analysis has been successfully generated from your transcripts.",
-      });
+      setCurrentAnalysis(data);
+      
+      // Save to database
+      const saved = await saveAnalysisResult(data, transcripts.length);
+      
+      if (saved) {
+        toast({
+          title: "Analysis Complete",
+          description: "AI analysis has been successfully generated and saved.",
+        });
+      }
 
     } catch (error: any) {
       console.error('Analysis error:', error);
@@ -129,7 +147,7 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
     );
   }
 
-  if (error && !analysis) {
+  if (error && !currentAnalysis) {
     return (
       <Card className="bg-white border-slate-200">
         <CardContent className="flex flex-col items-center justify-center py-16">
@@ -149,7 +167,7 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
     );
   }
 
-  if (!analysis) {
+  if (!currentAnalysis) {
     return (
       <Card className="bg-white border-slate-200 border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-16">
@@ -163,6 +181,7 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
           <Button
             onClick={runAnalysis}
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+            disabled={transcripts.length === 0}
           >
             Start AI Analysis
           </Button>
@@ -181,12 +200,17 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
           <Badge variant="secondary" className="bg-blue-100 text-blue-800">
             AI Generated
           </Badge>
+          {analysisResult && (
+            <Badge variant="outline" className="text-xs">
+              Saved {new Date(analysisResult.created_at).toLocaleDateString()}
+            </Badge>
+          )}
         </div>
         <Button
           onClick={runAnalysis}
           variant="outline"
           className="flex items-center space-x-2"
-          disabled={loading}
+          disabled={loading || transcripts.length === 0}
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           <span>Re-analyze</span>
@@ -201,7 +225,7 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
         </div>
         
         <div className="grid gap-6">
-          {analysis.keyThemes?.map((theme, index) => (
+          {currentAnalysis.keyThemes?.map((theme, index) => (
             <Card key={index} className="bg-white border-slate-200">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -259,7 +283,7 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
         </div>
         
         <div className="grid gap-6">
-          {analysis.disagreements?.map((disagreement, index) => (
+          {currentAnalysis.disagreements?.map((disagreement, index) => (
             <Card key={index} className="bg-white border-slate-200">
               <CardHeader>
                 <div className="flex items-start justify-between">

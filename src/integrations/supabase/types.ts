@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analysis_results: {
+        Row: {
+          created_at: string
+          disagreements: Json | null
+          id: string
+          key_themes: Json | null
+          project_id: string
+          transcript_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          disagreements?: Json | null
+          id?: string
+          key_themes?: Json | null
+          project_id: string
+          transcript_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          disagreements?: Json | null
+          id?: string
+          key_themes?: Json | null
+          project_id?: string
+          transcript_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analysis_results_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
@@ -38,6 +76,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      transcripts: {
+        Row: {
+          content: string
+          created_at: string
+          filename: string
+          id: string
+          project_id: string
+          size_kb: number | null
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          filename: string
+          id?: string
+          project_id: string
+          size_kb?: number | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          filename?: string
+          id?: string
+          project_id?: string
+          size_kb?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcripts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

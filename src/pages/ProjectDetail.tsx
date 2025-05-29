@@ -8,22 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import AIAnalysisResults from "@/components/AIAnalysisResults";
 import { useToast } from "@/hooks/use-toast";
 import TranscriptTextInput from "@/components/TranscriptTextInput";
-
-interface Transcript {
-  id: string;
-  filename: string;
-  uploadedAt: Date;
-  size: number;
-  content: string;
-}
+import { useTranscripts } from "@/hooks/useTranscripts";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Project {
   id: string;
   name: string;
   description: string;
-  transcriptCount: number;
-  createdAt: Date;
-  lastAnalyzed?: Date;
+  transcript_count: number;
+  created_at: string;
+  last_analyzed?: string;
 }
 
 const ProjectDetail = () => {
@@ -32,49 +26,72 @@ const ProjectDetail = () => {
   const { toast } = useToast();
   
   const [project, setProject] = useState<Project | null>(null);
-  const [transcripts, setTranscripts] = useState<Transcript[]>([]);
+  const [projectLoading, setProjectLoading] = useState(true);
+  const { transcripts, loading: transcriptsLoading, addTranscript, deleteTranscript } = useTranscripts(id || "");
 
   useEffect(() => {
-    // Mock project data - in real app this would fetch from API
-    const mockProject: Project = {
-      id: id || "1",
-      name: "New Project",
-      description: "Add transcripts to analyze themes and disagreements",
-      transcriptCount: 0,
-      createdAt: new Date(),
-    };
-    
-    setProject(mockProject);
-    setTranscripts([]);
-  }, [id]);
+    const fetchProject = async () => {
+      if (!id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-  const handleTranscriptAdd = (transcriptData: { filename: string; content: string }) => {
-    const newTranscript = {
-      id: Date.now().toString() + Math.random(),
-      filename: transcriptData.filename,
-      uploadedAt: new Date(),
-      size: Math.round((transcriptData.content.length / 1024) * 10) / 10, // KB approximation
-      content: transcriptData.content
+        if (error) {
+          console.error('Error fetching project:', error);
+          toast({
+            title: "Error loading project",
+            description: "Could not load project details. Please try again.",
+            variant: "destructive",
+          });
+          navigate('/');
+        } else {
+          setProject(data);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        navigate('/');
+      } finally {
+        setProjectLoading(false);
+      }
     };
-    
-    setTranscripts([...transcripts, newTranscript]);
-    
-    // Update project transcript count
-    if (project) {
-      setProject({
-        ...project,
-        transcriptCount: transcripts.length + 1
-      });
+
+    fetchProject();
+  }, [id, navigate, toast]);
+
+  const handleTranscriptAdd = async (transcriptData: { filename: string; content: string }) => {
+    const success = await addTranscript(transcriptData);
+    if (success && project) {
+      // Update local project state to reflect new transcript count
+      setProject(prev => prev ? { ...prev, transcript_count: prev.transcript_count + 1 } : null);
     }
-    
-    toast({
-      title: "Transcript added successfully",
-      description: `"${transcriptData.filename}" has been added to your project.`,
-    });
   };
 
+  const handleTranscriptDelete = async (transcriptId: string) => {
+    await deleteTranscript(transcriptId);
+    if (project) {
+      // Update local project state to reflect reduced transcript count
+      setProject(prev => prev ? { ...prev, transcript_count: Math.max(0, prev.transcript_count - 1) } : null);
+    }
+  };
+
+  if (projectLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div>Loading project...</div>
+      </div>
+    );
+  }
+
   if (!project) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div>Project not found</div>
+      </div>
+    );
   }
 
   return (
@@ -99,9 +116,9 @@ const ProjectDetail = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {project.lastAnalyzed && (
+              {project.last_analyzed && (
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  Last analyzed {project.lastAnalyzed.toLocaleDateString()}
+                  Last analyzed {new Date(project.last_analyzed).toLocaleDateString()}
                 </Badge>
               )}
             </div>
@@ -125,7 +142,9 @@ const ProjectDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {transcripts.length === 0 ? (
+                {transcriptsLoading ? (
+                  <p className="text-slate-500 text-sm">Loading transcripts...</p>
+                ) : transcripts.length === 0 ? (
                   <p className="text-slate-500 text-sm">No transcripts added yet.</p>
                 ) : (
                   <div className="space-y-3">
@@ -134,17 +153,25 @@ const ProjectDetail = () => {
                         key={transcript.id}
                         className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                       >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 flex-1">
                           <FileText className="w-4 h-4 text-slate-400" />
-                          <div>
-                            <p className="font-medium text-sm text-slate-900">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-slate-900 truncate">
                               {transcript.filename}
                             </p>
                             <p className="text-xs text-slate-500">
-                              {transcript.size} KB • {transcript.uploadedAt.toLocaleDateString()}
+                              {transcript.size_kb} KB • {new Date(transcript.created_at).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleTranscriptDelete(transcript.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <AlertTriangle className="w-4 h-4" />
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -155,7 +182,7 @@ const ProjectDetail = () => {
 
           {/* Right Column - AI Analysis Results */}
           <div className="lg:col-span-2">
-            <AIAnalysisResults transcripts={transcripts} />
+            <AIAnalysisResults transcripts={transcripts} projectId={id || ""} />
           </div>
         </div>
       </main>
