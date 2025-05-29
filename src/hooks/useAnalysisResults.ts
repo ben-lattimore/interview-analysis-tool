@@ -85,10 +85,10 @@ export const useAnalysisResults = (projectId: string) => {
         .from('analysis_results')
         .insert({
           project_id: projectId,
-          key_themes: analysisData.keyThemes,
-          disagreements: analysisData.disagreements,
+          key_themes: analysisData.keyThemes as any,
+          disagreements: analysisData.disagreements as any,
           transcript_count: transcriptCount,
-        })
+        } as any)
         .select()
         .single();
 
