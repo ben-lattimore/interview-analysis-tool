@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, FileText, Brain, AlertTriangle, TrendingUp, Download } from "lucide-react";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import FileUpload from "@/components/FileUpload";
 import AIAnalysisResults from "@/components/AIAnalysisResults";
 import { useToast } from "@/hooks/use-toast";
+import TranscriptTextInput from "@/components/TranscriptTextInput";
 
 interface Transcript {
   id: string;
@@ -73,6 +73,31 @@ const ProjectDetail = () => {
     });
   };
 
+  const handleTranscriptAdd = (transcriptData: { filename: string; content: string }) => {
+    const newTranscript = {
+      id: Date.now().toString() + Math.random(),
+      filename: transcriptData.filename,
+      uploadedAt: new Date(),
+      size: Math.round((transcriptData.content.length / 1024) * 10) / 10, // KB approximation
+      content: transcriptData.content
+    };
+    
+    setTranscripts([...transcripts, newTranscript]);
+    
+    // Update project transcript count
+    if (project) {
+      setProject({
+        ...project,
+        transcriptCount: transcripts.length + 1
+      });
+    }
+    
+    toast({
+      title: "Transcript added successfully",
+      description: `"${transcriptData.filename}" has been added to your project.`,
+    });
+  };
+
   if (!project) {
     return <div>Loading...</div>;
   }
@@ -129,6 +154,9 @@ const ProjectDetail = () => {
               </CardContent>
             </Card>
 
+            {/* Text Input Section */}
+            <TranscriptTextInput onTranscriptAdd={handleTranscriptAdd} />
+
             {/* Files List */}
             <Card className="bg-white border-slate-200">
               <CardHeader>
@@ -139,7 +167,7 @@ const ProjectDetail = () => {
               </CardHeader>
               <CardContent>
                 {transcripts.length === 0 ? (
-                  <p className="text-slate-500 text-sm">No transcripts uploaded yet.</p>
+                  <p className="text-slate-500 text-sm">No transcripts added yet.</p>
                 ) : (
                   <div className="space-y-3">
                     {transcripts.map((transcript) => (
@@ -154,7 +182,7 @@ const ProjectDetail = () => {
                               {transcript.filename}
                             </p>
                             <p className="text-xs text-slate-500">
-                              {transcript.size} MB • {transcript.uploadedAt.toLocaleDateString()}
+                              {transcript.size} {transcript.size < 1 ? 'KB' : 'MB'} • {transcript.uploadedAt.toLocaleDateString()}
                             </p>
                           </div>
                         </div>

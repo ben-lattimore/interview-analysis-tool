@@ -5,35 +5,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; description: string }) => void;
+  onSubmit: (data: { name: string; description: string; transcriptText?: string }) => void;
 }
 
 const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectModalProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [transcriptText, setTranscriptText] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onSubmit({ name: name.trim(), description: description.trim() });
+      onSubmit({ 
+        name: name.trim(), 
+        description: description.trim(),
+        transcriptText: transcriptText.trim() || undefined
+      });
       setName("");
       setDescription("");
+      setTranscriptText("");
     }
   };
 
   const handleClose = () => {
     setName("");
     setDescription("");
+    setTranscriptText("");
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-slate-900">
             Create New Project
@@ -68,6 +76,23 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectModalPro
               className="border-slate-300 focus:border-blue-500 focus:ring-blue-500 resize-none"
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="transcript" className="text-sm font-medium text-slate-700">
+              Transcript Text (Optional)
+            </Label>
+            <Textarea
+              id="transcript"
+              value={transcriptText}
+              onChange={(e) => setTranscriptText(e.target.value)}
+              placeholder="Paste your transcript text here... You can also add more transcripts later."
+              className="border-slate-300 focus:border-blue-500 focus:ring-blue-500 resize-none"
+              rows={8}
+            />
+            <p className="text-xs text-slate-500">
+              You can paste transcript text here to get started, or add transcripts later using the upload feature.
+            </p>
           </div>
           
           <div className="flex space-x-3 pt-4">

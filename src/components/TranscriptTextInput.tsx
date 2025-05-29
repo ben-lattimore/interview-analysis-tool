@@ -1,0 +1,87 @@
+
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { FileText, Plus } from "lucide-react";
+
+interface TranscriptTextInputProps {
+  onTranscriptAdd: (transcript: { filename: string; content: string }) => void;
+}
+
+const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
+  const [transcriptText, setTranscriptText] = useState("");
+  const [filename, setFilename] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (transcriptText.trim() && filename.trim()) {
+      onTranscriptAdd({
+        filename: filename.trim(),
+        content: transcriptText.trim()
+      });
+      setTranscriptText("");
+      setFilename("");
+    }
+  };
+
+  return (
+    <Card className="bg-white border-slate-200">
+      <CardHeader>
+        <CardTitle className="flex items-center text-lg font-semibold text-slate-900">
+          <FileText className="w-5 h-5 mr-2 text-green-600" />
+          Add Transcript Text
+        </CardTitle>
+        <CardDescription>
+          Paste transcript text directly instead of uploading files
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="filename" className="text-sm font-medium text-slate-700">
+              Transcript Name
+            </Label>
+            <Input
+              id="filename"
+              type="text"
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              placeholder="e.g., Interview with John Doe"
+              className="border-slate-300 focus:border-green-500 focus:ring-green-500"
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="transcript-text" className="text-sm font-medium text-slate-700">
+              Transcript Content
+            </Label>
+            <Textarea
+              id="transcript-text"
+              value={transcriptText}
+              onChange={(e) => setTranscriptText(e.target.value)}
+              placeholder="Paste your transcript text here..."
+              className="border-slate-300 focus:border-green-500 focus:ring-green-500 resize-none"
+              rows={10}
+              required
+            />
+          </div>
+          
+          <Button
+            type="submit"
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+            disabled={!transcriptText.trim() || !filename.trim()}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Transcript
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TranscriptTextInput;
