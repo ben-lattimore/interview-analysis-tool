@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, FileText, Brain, AlertTriangle, TrendingUp, Download } from "lucide-react";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import FileUpload from "@/components/FileUpload";
-import AnalysisResults from "@/components/AnalysisResults";
+import AIAnalysisResults from "@/components/AIAnalysisResults";
 import { useToast } from "@/hooks/use-toast";
 
 interface Transcript {
@@ -14,6 +13,7 @@ interface Transcript {
   filename: string;
   uploadedAt: Date;
   size: number;
+  content: string;
 }
 
 interface Project {
@@ -32,7 +32,6 @@ const ProjectDetail = () => {
   
   const [project, setProject] = useState<Project | null>(null);
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
-  const [hasAnalysis, setHasAnalysis] = useState(false);
 
   useEffect(() => {
     // Mock project data - in real app this would fetch from API
@@ -51,24 +50,26 @@ const ProjectDetail = () => {
         filename: "geoffrey-hinton-interview.pdf",
         uploadedAt: new Date("2024-01-15"),
         size: 2.4,
+        content: "Geoffrey Hinton discusses the rapid advancement of AI and expresses concerns about the pace of development. He believes we may be moving too fast without proper safety measures in place. The potential for AGI within the next decade is very real, but we need to slow down and focus more on alignment research before pushing capabilities further. The economic disruption will be unprecedented, affecting jobs across all sectors much faster than previous technological revolutions."
       },
       {
         id: "2",
         filename: "yann-lecun-discussion.pdf",
         uploadedAt: new Date("2024-01-16"),
         size: 1.8,
+        content: "Yann LeCun argues that current fears about AI development are overblown. He believes the current pace of development is necessary and that slowing down could mean missing crucial breakthroughs. Competition drives innovation, and we shouldn't artificially constrain progress. He disagrees with doomsday scenarios and thinks the risks are manageable with proper research and gradual development. Open source development is crucial for democratic participation in AI progress."
       },
       {
         id: "3",
         filename: "andrew-ng-insights.pdf",
         uploadedAt: new Date("2024-01-17"),
         size: 3.1,
+        content: "Andrew Ng focuses on the practical applications of AI and the need for better AI governance frameworks. He emphasizes that international cooperation is essential for managing existential risks. The regulatory landscape needs to be adaptive since we can't predict all future challenges. He supports a balanced approach between innovation and safety, advocating for new models of distributing AI productivity gains across society. Education and workforce retraining will be critical for managing the economic transition."
       },
     ];
     
     setProject(mockProject);
     setTranscripts(mockTranscripts);
-    setHasAnalysis(mockTranscripts.length > 0);
   }, [id]);
 
   const handleFileUpload = (files: File[]) => {
@@ -77,6 +78,7 @@ const ProjectDetail = () => {
       filename: file.name,
       uploadedAt: new Date(),
       size: Math.round((file.size / 1024 / 1024) * 10) / 10, // MB
+      content: "Uploaded transcript content would be extracted here..."
     }));
     
     setTranscripts([...transcripts, ...newTranscripts]);
@@ -85,27 +87,6 @@ const ProjectDetail = () => {
       title: "Files uploaded successfully",
       description: `${files.length} transcript(s) have been added to your project.`,
     });
-  };
-
-  const handleRunAnalysis = () => {
-    setHasAnalysis(true);
-    
-    toast({
-      title: "Analysis started",
-      description: "We're processing your transcripts to extract key themes and disagreements.",
-    });
-    
-    // Mock analysis delay
-    setTimeout(() => {
-      if (project) {
-        setProject({ ...project, lastAnalyzed: new Date() });
-      }
-      
-      toast({
-        title: "Analysis complete",
-        description: "Your transcript analysis is ready for review.",
-      });
-    }, 2000);
   };
 
   if (!project) {
@@ -199,42 +180,11 @@ const ProjectDetail = () => {
                 )}
               </CardContent>
             </Card>
-
-            {/* Analysis Button */}
-            {transcripts.length > 0 && (
-              <Button
-                onClick={handleRunAnalysis}
-                disabled={hasAnalysis}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Brain className="w-4 h-4 mr-2" />
-                {hasAnalysis ? "Analysis Complete" : "Run Analysis"}
-              </Button>
-            )}
           </div>
 
-          {/* Right Column - Analysis Results */}
+          {/* Right Column - AI Analysis Results */}
           <div className="lg:col-span-2">
-            {hasAnalysis ? (
-              <AnalysisResults />
-            ) : (
-              <Card className="bg-white border-slate-200 border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <Brain className="w-16 h-16 text-slate-400 mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                    Ready for Analysis
-                  </h3>
-                  <p className="text-slate-600 text-center max-w-md mb-6">
-                    Upload transcripts and run analysis to discover key themes and areas of disagreement across your interviews.
-                  </p>
-                  {transcripts.length === 0 && (
-                    <p className="text-sm text-slate-500">
-                      Start by uploading your first transcript PDF.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+            <AIAnalysisResults transcripts={transcripts} />
           </div>
         </div>
       </main>
