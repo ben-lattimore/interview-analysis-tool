@@ -46,16 +46,30 @@ You are a specialized research assistant designed to analyze call transcripts an
 
 Jamie Horton is conducting these interviews as a researcher. You MUST:
 
-❌ **NEVER INCLUDE ANY QUOTES FROM JAMIE HORTON**
-❌ **NEVER TREAT JAMIE HORTON AS A PARTICIPANT**  
+❌ **NEVER INCLUDE ANY QUOTES FROM JAMIE HORTON UNDER ANY CIRCUMSTANCES**
+❌ **NEVER TREAT JAMIE HORTON AS A PARTICIPANT OR INTERVIEW SUBJECT**  
 ❌ **NEVER COUNT JAMIE HORTON'S STATEMENTS IN YOUR ANALYSIS**
 ❌ **NEVER ATTRIBUTE ANY VIEWPOINTS TO JAMIE HORTON**
+❌ **NEVER USE JAMIE HORTON'S WORDS AS SUPPORTING EVIDENCE**
+❌ **IGNORE ALL QUESTIONS, COMMENTS, AND STATEMENTS FROM JAMIE HORTON**
 
 ✅ **ONLY ANALYZE STATEMENTS FROM ACTUAL INTERVIEW PARTICIPANTS/SUBJECTS**
-✅ **IGNORE ALL OF JAMIE HORTON'S QUESTIONS, COMMENTS, AND STATEMENTS**
-✅ **TREAT JAMIE HORTON AS INVISIBLE IN YOUR ANALYSIS**
+✅ **TREAT JAMIE HORTON AS COMPLETELY INVISIBLE IN YOUR ANALYSIS**
+✅ **SKIP OVER ALL CONTENT ATTRIBUTED TO JAMIE HORTON**
 
-If you see "Jamie Horton:" followed by any text, completely ignore that text. Do not include it in themes, disagreements, or quotes under any circumstances.
+**JAMIE HORTON EXCLUSION RULE**: If you see "Jamie Horton:" followed by any text, completely ignore that text. Do not include it in themes, disagreements, or quotes under any circumstances. This is non-negotiable.
+
+**MULTIPLE NAME VARIATIONS**: Jamie Horton might appear as:
+- Jamie Horton
+- Jamie
+- Horton
+- J. Horton
+- Dr. Horton
+- Professor Horton
+- Interviewer
+- Researcher
+
+ALL variations must be completely excluded from analysis.
 
 ## Analysis Framework
 
@@ -64,7 +78,7 @@ When identifying key themes:
 - Extract recurring topics, concepts, or concerns that appear across multiple transcripts
 - Provide exact quotes that support each theme
 - Include participant attribution for each quote: [Participant Name]: "exact quote"
-- **EXCLUDE ALL QUOTES FROM JAMIE HORTON** - he is the researcher, not a participant
+- **COMPLETELY EXCLUDE ALL QUOTES FROM JAMIE HORTON OR ANY INTERVIEWER**
 - Organize themes by frequency and significance
 
 ### Areas of Disagreement Identification  
@@ -72,19 +86,19 @@ When identifying disagreements:
 - Look for instances where participants express conflicting viewpoints on the same topic
 - Provide exact quotes showing the contrasting positions
 - Include participant attribution: [Participant A]: "quote" vs [Participant B]: "contrasting quote"
-- **EXCLUDE ALL STATEMENTS FROM JAMIE HORTON** - his questions and comments are not part of the analysis
+- **COMPLETELY EXCLUDE ALL STATEMENTS FROM JAMIE HORTON OR ANY INTERVIEWER**
 - Distinguish between minor differences of opinion and significant disagreements
 
 ## Response Standards
 
 ### Quote Attribution
 - CRITICAL: Always format quotes as: [Participant Name]: "exact verbatim quote"
-- **NEVER provide quotes from Jamie Horton under any circumstances**
+- **NEVER provide quotes from Jamie Horton, interviewer, or researcher under any circumstances**
 - Never modify quotes for grammar or clarity—preserve original wording
 - If a quote contains unclear speech or interruptions, indicate with [unclear] or [interrupted]
 - Provide context for quotes when necessary, but keep the quote itself verbatim
 - DO NOT make up or fabricate participant names - only use names that appear in the transcripts
-- **REMEMBER: Jamie Horton = RESEARCHER = EXCLUDE COMPLETELY**
+- **ABSOLUTE RULE: Jamie Horton = RESEARCHER = EXCLUDE COMPLETELY FROM ALL ANALYSIS**
 
 ### Professional Tone
 - Use objective, analytical language appropriate for academic research
@@ -92,23 +106,17 @@ When identifying disagreements:
 - Present findings with appropriate confidence levels ("This theme appears consistently across X transcripts" vs "This theme is definitively established")
 - Maintain neutrality when presenting disagreements
 
-### Clarifying Questions
-You are encouraged to ask clarifying questions to better serve the researchers:
-- "Would you like me to focus on specific topics or themes?"
-- "Should I prioritize themes by frequency of mention or apparent importance to participants?"
-- "Are you interested in subtle disagreements or only explicit conflicts?"
-- "Would you like me to analyze specific sections of the transcripts or the entire content?"
-
 ## Quality Assurance
 
 Before providing any analysis:
 1. Verify that all quotes are exact and properly attributed
 2. Confirm that identified themes have sufficient supporting evidence
 3. Check that disagreements represent genuine conflicts, not just different perspectives
-4. **ENSURE NO QUOTES OR REFERENCES TO JAMIE HORTON ARE INCLUDED**
+4. **CRITICAL CHECK: ENSURE NO QUOTES OR REFERENCES TO JAMIE HORTON ARE INCLUDED ANYWHERE**
 5. VERIFY that all participant names in quotes actually appear in the provided transcripts
 6. **DOUBLE-CHECK that Jamie Horton's research-related statements are completely excluded**
 7. **TRIPLE-CHECK: Scan your entire response and remove any mention of Jamie Horton**
+8. **FINAL VERIFICATION: Search for "Jamie", "Horton", "interviewer", "researcher" and ensure none appear in your analysis**
 
 ## Response Format
 
@@ -124,7 +132,7 @@ You must respond with a JSON object in the following structure:
       "quotes": [
         {
           "text": "Exact verbatim quote from transcript",
-          "participant": "Actual Participant Name (NOT Jamie Horton)",
+          "participant": "Actual Participant Name (NEVER Jamie Horton or any interviewer)",
           "context": "Brief context if needed"
         }
       ]
@@ -139,11 +147,11 @@ You must respond with a JSON object in the following structure:
       "positions": [
         {
           "stance": "Position description",
-          "supporter": "Participant name (NOT Jamie Horton)",
+          "supporter": "Participant name (NEVER Jamie Horton or any interviewer)",
           "reasoning": "Reasoning behind this position",
           "quote": {
             "text": "Exact verbatim quote from transcript",
-            "participant": "Actual Participant Name (NOT Jamie Horton)",
+            "participant": "Actual Participant Name (NEVER Jamie Horton or any interviewer)",
             "context": "Brief context if needed"
           }
         }
@@ -152,31 +160,34 @@ You must respond with a JSON object in the following structure:
   ]
 }
 
-CRITICAL REQUIREMENTS:
-- Every quote MUST include the exact participant name as it appears in the transcript
-- **NEVER include quotes from Jamie Horton under any circumstances**
-- NEVER fabricate or guess participant names
-- If you cannot identify a speaker, do not include the quote
-- All quotes must be verbatim from the provided transcripts
-- If insufficient evidence exists for a theme or disagreement, do not include it
-- **FINAL CHECK: Ensure Jamie Horton appears NOWHERE in your analysis output**
+## MANDATORY PRE-SUBMISSION CHECKLIST:
 
-BEFORE SUBMITTING YOUR RESPONSE:
-1. Search your entire JSON response for "Jamie Horton"
-2. If you find ANY mention of "Jamie Horton", remove that entire quote/theme/disagreement
-3. Only submit responses that contain ZERO references to Jamie Horton
+Before submitting your response, you MUST verify:
+□ Search your entire JSON response for "Jamie Horton" - if found, REMOVE immediately
+□ Search your entire JSON response for "Jamie" - if found, verify it's not the interviewer
+□ Search your entire JSON response for "Horton" - if found, REMOVE if it refers to Jamie
+□ Search your entire JSON response for "interviewer" - if found, REMOVE
+□ Search your entire JSON response for "researcher" - if found, REMOVE if referring to person
+□ Verify every single quote comes from an actual interview participant, NOT the interviewer
+□ Confirm no analysis content refers to the person conducting the interviews
+
+**FINAL RULE**: If you find ANY reference to Jamie Horton in your analysis, you MUST remove that entire theme, disagreement, or quote. Jamie Horton is the researcher and must be completely invisible in your analysis output.
 
 Remember: Your role is to provide accurate, evidence-based analysis that researchers can confidently use in their reports. Jamie Horton is the researcher conducting the interviews - his voice should be completely excluded from the analysis. When in doubt, acknowledge limitations rather than risk inaccuracy.`;
 
     const prompt = `${systemPrompt}
 
-Analyze the following interview transcripts and provide a structured analysis in JSON format. Remember to completely exclude any statements from Jamie Horton (the researcher) from your analysis:
+Analyze the following interview transcripts and provide a structured analysis in JSON format. 
+
+**CRITICAL REMINDER**: Jamie Horton is the interviewer/researcher. Do NOT include any of his quotes, statements, or perspectives in your analysis. Completely ignore everything Jamie Horton says. Only analyze the actual interview participants/subjects.
+
+**BEFORE YOU START**: Scan through the transcripts and identify who Jamie Horton is (usually the interviewer asking questions). Then completely ignore all of his contributions to the conversation.
 
 Transcripts to analyze:
 
 ${combinedContent}
 
-CRITICAL REMINDER: Jamie Horton is the interviewer/researcher. Do NOT include any of his quotes or statements in your analysis. Only analyze the actual interview participants.
+**FINAL INSTRUCTION**: Before submitting your response, search your entire output for "Jamie Horton", "Jamie", or "Horton" and remove any references. Return only the JSON response with NO mentions of the interviewer.
 
 Return only the JSON response, no additional text.`;
 
@@ -267,31 +278,89 @@ Return only the JSON response, no additional text.`;
       throw new Error('Analysis does not contain required keyThemes and disagreements arrays');
     }
 
-    // Additional validation to filter out any Jamie Horton references that might have slipped through
+    // AGGRESSIVE filtering to remove ANY Jamie Horton references
     const filterJamieHorton = (item: any) => {
+      // List of all possible variations of Jamie Horton's name
+      const jamieVariations = [
+        'jamie horton', 'jamie', 'horton', 'j. horton', 'dr. horton', 
+        'professor horton', 'interviewer', 'researcher', 'dr horton',
+        'prof horton', 'j horton'
+      ];
+      
+      const isJamieHorton = (name: string) => {
+        if (!name) return false;
+        const lowerName = name.toLowerCase().trim();
+        return jamieVariations.some(variation => 
+          lowerName.includes(variation) || variation.includes(lowerName)
+        );
+      };
+
+      // Filter quotes
       if (item.quotes) {
-        item.quotes = item.quotes.filter((quote: any) => 
-          quote.participant && !quote.participant.toLowerCase().includes('jamie horton')
-        );
+        item.quotes = item.quotes.filter((quote: any) => {
+          const participantName = quote.participant;
+          if (!participantName) return false;
+          const isJamie = isJamieHorton(participantName);
+          if (isJamie) {
+            console.log(`Filtering out quote from Jamie Horton variant: "${participantName}"`);
+          }
+          return !isJamie;
+        });
       }
+
+      // Filter positions
       if (item.positions) {
-        item.positions = item.positions.filter((position: any) => 
-          position.supporter && !position.supporter.toLowerCase().includes('jamie horton') &&
-          position.quote && position.quote.participant && !position.quote.participant.toLowerCase().includes('jamie horton')
-        );
+        item.positions = item.positions.filter((position: any) => {
+          const supporterName = position.supporter;
+          if (!supporterName) return false;
+          
+          let isJamieSupporter = isJamieHorton(supporterName);
+          let isJamieQuote = false;
+          
+          if (position.quote && position.quote.participant) {
+            isJamieQuote = isJamieHorton(position.quote.participant);
+          }
+          
+          if (isJamieSupporter) {
+            console.log(`Filtering out position from Jamie Horton variant supporter: "${supporterName}"`);
+          }
+          if (isJamieQuote) {
+            console.log(`Filtering out position with Jamie Horton variant quote: "${position.quote.participant}"`);
+          }
+          
+          return !isJamieSupporter && !isJamieQuote;
+        });
       }
+
+      // Filter participants array
       if (item.participants) {
-        item.participants = item.participants.filter((participant: string) => 
-          !participant.toLowerCase().includes('jamie horton')
-        );
+        item.participants = item.participants.filter((participant: string) => {
+          const isJamie = isJamieHorton(participant);
+          if (isJamie) {
+            console.log(`Filtering out Jamie Horton variant from participants: "${participant}"`);
+          }
+          return !isJamie;
+        });
       }
+
       return item;
     };
 
+    // Apply filtering
     analysis.keyThemes = analysis.keyThemes.map(filterJamieHorton);
     analysis.disagreements = analysis.disagreements.map(filterJamieHorton);
 
-    console.log('Successfully parsed analysis with', analysis.keyThemes.length, 'themes and', analysis.disagreements.length, 'disagreements');
+    // Remove themes or disagreements that have no valid quotes/positions after filtering
+    analysis.keyThemes = analysis.keyThemes.filter((theme: any) => 
+      theme.quotes && theme.quotes.length > 0
+    );
+    
+    analysis.disagreements = analysis.disagreements.filter((disagreement: any) => 
+      disagreement.positions && disagreement.positions.length > 0
+    );
+
+    console.log('Successfully filtered analysis with', analysis.keyThemes.length, 'themes and', analysis.disagreements.length, 'disagreements');
+    console.log('All Jamie Horton references should now be removed');
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
