@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { TrendingUp, AlertTriangle, Users, BookOpen, Quote, Loader2 } from "lucide-react";
+import { TrendingUp, AlertTriangle, Users, BookOpen, Quote, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -128,12 +129,12 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
             Analysis Failed
           </h3>
           <p className="text-slate-600 text-center mb-4">{error}</p>
-          <button
+          <Button
             onClick={runAnalysis}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             Try Again
-          </button>
+          </Button>
         </CardContent>
       </Card>
     );
@@ -150,12 +151,12 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
           <p className="text-slate-600 text-center max-w-md mb-6">
             Click the button below to analyze your transcripts with AI and discover key themes and areas of disagreement.
           </p>
-          <button
+          <Button
             onClick={runAnalysis}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
           >
             Start AI Analysis
-          </button>
+          </Button>
         </CardContent>
       </Card>
     );
@@ -163,14 +164,31 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
 
   return (
     <div className="space-y-8">
+      {/* Analysis Header with Re-analyze Button */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <TrendingUp className="w-6 h-6 text-blue-600" />
+          <h2 className="text-2xl font-bold text-slate-900">AI Analysis Results</h2>
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+            AI Generated
+          </Badge>
+        </div>
+        <Button
+          onClick={runAnalysis}
+          variant="outline"
+          className="flex items-center space-x-2"
+          disabled={loading}
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <span>Re-analyze</span>
+        </Button>
+      </div>
+
       {/* Key Themes Section */}
       <div>
         <div className="flex items-center space-x-3 mb-6">
           <TrendingUp className="w-6 h-6 text-blue-600" />
           <h2 className="text-2xl font-bold text-slate-900">Key Themes</h2>
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-            AI Generated
-          </Badge>
         </div>
         
         <div className="grid gap-6">
@@ -222,9 +240,6 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
         <div className="flex items-center space-x-3 mb-6">
           <AlertTriangle className="w-6 h-6 text-red-600" />
           <h2 className="text-2xl font-bold text-slate-900">Areas of Disagreement</h2>
-          <Badge variant="secondary" className="bg-red-100 text-red-800">
-            AI Generated
-          </Badge>
         </div>
         
         <div className="grid gap-6">
