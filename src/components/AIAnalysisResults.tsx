@@ -7,12 +7,25 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface QuoteObject {
+  text: string;
+  participant: string;
+  context?: string;
+}
+
 interface KeyTheme {
   title: string;
   confidence: number;
   mentions: number;
   description: string;
-  quotes: string[];
+  quotes: QuoteObject[];
+}
+
+interface Position {
+  stance: string;
+  supporter: string;
+  reasoning: string;
+  quote: QuoteObject;
 }
 
 interface Disagreement {
@@ -20,11 +33,7 @@ interface Disagreement {
   intensity: string;
   participants: string[];
   description: string;
-  positions: {
-    stance: string;
-    supporter: string;
-    reasoning: string;
-  }[];
+  positions: Position[];
 }
 
 interface AnalysisData {
@@ -221,12 +230,19 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
                     Key Quotes
                   </h4>
                   {theme.quotes?.map((quote, quoteIndex) => (
-                    <blockquote
-                      key={quoteIndex}
-                      className="border-l-4 border-blue-200 pl-4 italic text-slate-700 text-sm"
-                    >
-                      "{quote}"
-                    </blockquote>
+                    <div key={quoteIndex} className="border-l-4 border-blue-200 pl-4">
+                      <blockquote className="italic text-slate-700 text-sm mb-2">
+                        "{quote.text}"
+                      </blockquote>
+                      <p className="text-xs text-slate-500 font-medium">
+                        — {quote.participant}
+                      </p>
+                      {quote.context && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          {quote.context}
+                        </p>
+                      )}
+                    </div>
                   ))}
                 </div>
               </CardContent>
@@ -276,7 +292,22 @@ const AIAnalysisResults = ({ transcripts }: AIAnalysisResultsProps) => {
                           {position.supporter}
                         </Badge>
                       </div>
-                      <p className="text-sm text-slate-600">{position.reasoning}</p>
+                      <p className="text-sm text-slate-600 mb-3">{position.reasoning}</p>
+                      {position.quote && (
+                        <div className="bg-slate-50 p-3 rounded">
+                          <blockquote className="italic text-slate-700 text-sm mb-2">
+                            "{position.quote.text}"
+                          </blockquote>
+                          <p className="text-xs text-slate-500 font-medium">
+                            — {position.quote.participant}
+                          </p>
+                          {position.quote.context && (
+                            <p className="text-xs text-slate-400 mt-1">
+                              {position.quote.context}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
