@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -30,6 +29,7 @@ serve(async (req) => {
       `=== ${t.filename} ===\n${t.content || 'No content available'}`
     ).join('\n\n');
 
+    // ... keep existing code (system prompt definition)
     const systemPrompt = `# Call Transcript Analysis System Prompt
 
 You are a specialized research assistant designed to analyze call transcripts and identify key themes and areas of disagreement with rigorous academic standards. Your primary function is to support researchers in building comprehensive reports from interview data.
@@ -200,21 +200,58 @@ Return only the JSON response, no additional text.`;
     }
 
     const analysisText = data.candidates[0].content.parts[0].text;
+    console.log('Raw response from Gemini:', analysisText.substring(0, 500) + '...');
     
-    // Try to parse the JSON response
+    // Try to parse the JSON response with improved logic
     let analysis;
     try {
-      // Clean up the response text to extract JSON
-      const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        analysis = JSON.parse(jsonMatch[0]);
+      // First, try to parse the response directly
+      analysis = JSON.parse(analysisText);
+    } catch (directParseError) {
+      console.log('Direct parsing failed, trying to extract JSON from markdown...');
+      
+      // Try to extract JSON from markdown code blocks
+      const jsonBlockRegex = /```(?:json)?\s*(\{[\s\S]*?\})\s*```/;
+      const jsonMatch = analysisText.match(jsonBlockRegex);
+      
+      if (jsonMatch && jsonMatch[1]) {
+        try {
+          analysis = JSON.parse(jsonMatch[1]);
+        } catch (markdownParseError) {
+          console.error('Failed to parse JSON from markdown block:', markdownParseError);
+          throw new Error('Failed to parse JSON from markdown block');
+        }
       } else {
-        throw new Error('No JSON found in response');
+        // Try to find JSON object boundaries
+        const startIndex = analysisText.indexOf('{');
+        const lastIndex = analysisText.lastIndexOf('}');
+        
+        if (startIndex !== -1 && lastIndex !== -1 && lastIndex > startIndex) {
+          const jsonCandidate = analysisText.substring(startIndex, lastIndex + 1);
+          try {
+            analysis = JSON.parse(jsonCandidate);
+          } catch (boundaryParseError) {
+            console.error('Failed to parse JSON from boundaries:', boundaryParseError);
+            console.error('JSON candidate:', jsonCandidate.substring(0, 500) + '...');
+            throw new Error('Failed to parse AI response as JSON');
+          }
+        } else {
+          console.error('No JSON found in response:', analysisText);
+          throw new Error('No valid JSON found in AI response');
+        }
       }
-    } catch (parseError) {
-      console.error('Failed to parse JSON:', analysisText);
-      throw new Error('Failed to parse AI response as JSON');
     }
+
+    // Validate the parsed analysis has required structure
+    if (!analysis || typeof analysis !== 'object') {
+      throw new Error('Parsed analysis is not a valid object');
+    }
+
+    if (!Array.isArray(analysis.keyThemes) || !Array.isArray(analysis.disagreements)) {
+      throw new Error('Analysis does not contain required keyThemes and disagreements arrays');
+    }
+
+    console.log('Successfully parsed analysis with', analysis.keyThemes.length, 'themes and', analysis.disagreements.length, 'disagreements');
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
