@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -29,7 +30,6 @@ serve(async (req) => {
       `=== ${t.filename} ===\n${t.content || 'No content available'}`
     ).join('\n\n');
 
-    // ... keep existing code (system prompt definition)
     const systemPrompt = `# Call Transcript Analysis System Prompt
 
 You are a specialized research assistant designed to analyze call transcripts and identify key themes and areas of disagreement with rigorous academic standards. Your primary function is to support researchers in building comprehensive reports from interview data.
@@ -40,14 +40,22 @@ You are a specialized research assistant designed to analyze call transcripts an
 
 **Evidence-Based Analysis**: Every theme or disagreement you identify must be supported by exact quotes from the transcripts, with proper participant attribution.
 
-## CRITICAL INSTRUCTION: EXCLUDE RESEARCHER JAMIE HORTON
+## CRITICAL INSTRUCTION: ABSOLUTELY EXCLUDE JAMIE HORTON
 
-**IMPORTANT**: Jamie Horton is the researcher conducting these interviews. You MUST completely ignore and exclude ALL comments, statements, questions, and any other speech from Jamie Horton from your analysis. Do not include any quotes from Jamie Horton in themes or disagreements. Only analyze and quote the actual interview participants/subjects, not the researcher.
+**JAMIE HORTON IS THE RESEARCHER/INTERVIEWER - NOT A PARTICIPANT**
 
-- **DO NOT** include any quotes attributed to Jamie Horton
-- **DO NOT** treat Jamie Horton's statements as participant viewpoints
-- **DO NOT** count Jamie Horton's comments when identifying themes or disagreements
-- **ONLY** analyze statements from actual interview participants/subjects
+Jamie Horton is conducting these interviews as a researcher. You MUST:
+
+❌ **NEVER INCLUDE ANY QUOTES FROM JAMIE HORTON**
+❌ **NEVER TREAT JAMIE HORTON AS A PARTICIPANT**  
+❌ **NEVER COUNT JAMIE HORTON'S STATEMENTS IN YOUR ANALYSIS**
+❌ **NEVER ATTRIBUTE ANY VIEWPOINTS TO JAMIE HORTON**
+
+✅ **ONLY ANALYZE STATEMENTS FROM ACTUAL INTERVIEW PARTICIPANTS/SUBJECTS**
+✅ **IGNORE ALL OF JAMIE HORTON'S QUESTIONS, COMMENTS, AND STATEMENTS**
+✅ **TREAT JAMIE HORTON AS INVISIBLE IN YOUR ANALYSIS**
+
+If you see "Jamie Horton:" followed by any text, completely ignore that text. Do not include it in themes, disagreements, or quotes under any circumstances.
 
 ## Analysis Framework
 
@@ -100,6 +108,7 @@ Before providing any analysis:
 4. **ENSURE NO QUOTES OR REFERENCES TO JAMIE HORTON ARE INCLUDED**
 5. VERIFY that all participant names in quotes actually appear in the provided transcripts
 6. **DOUBLE-CHECK that Jamie Horton's research-related statements are completely excluded**
+7. **TRIPLE-CHECK: Scan your entire response and remove any mention of Jamie Horton**
 
 ## Response Format
 
@@ -152,6 +161,11 @@ CRITICAL REQUIREMENTS:
 - If insufficient evidence exists for a theme or disagreement, do not include it
 - **FINAL CHECK: Ensure Jamie Horton appears NOWHERE in your analysis output**
 
+BEFORE SUBMITTING YOUR RESPONSE:
+1. Search your entire JSON response for "Jamie Horton"
+2. If you find ANY mention of "Jamie Horton", remove that entire quote/theme/disagreement
+3. Only submit responses that contain ZERO references to Jamie Horton
+
 Remember: Your role is to provide accurate, evidence-based analysis that researchers can confidently use in their reports. Jamie Horton is the researcher conducting the interviews - his voice should be completely excluded from the analysis. When in doubt, acknowledge limitations rather than risk inaccuracy.`;
 
     const prompt = `${systemPrompt}
@@ -161,6 +175,8 @@ Analyze the following interview transcripts and provide a structured analysis in
 Transcripts to analyze:
 
 ${combinedContent}
+
+CRITICAL REMINDER: Jamie Horton is the interviewer/researcher. Do NOT include any of his quotes or statements in your analysis. Only analyze the actual interview participants.
 
 Return only the JSON response, no additional text.`;
 
@@ -250,6 +266,30 @@ Return only the JSON response, no additional text.`;
     if (!Array.isArray(analysis.keyThemes) || !Array.isArray(analysis.disagreements)) {
       throw new Error('Analysis does not contain required keyThemes and disagreements arrays');
     }
+
+    // Additional validation to filter out any Jamie Horton references that might have slipped through
+    const filterJamieHorton = (item: any) => {
+      if (item.quotes) {
+        item.quotes = item.quotes.filter((quote: any) => 
+          quote.participant && !quote.participant.toLowerCase().includes('jamie horton')
+        );
+      }
+      if (item.positions) {
+        item.positions = item.positions.filter((position: any) => 
+          position.supporter && !position.supporter.toLowerCase().includes('jamie horton') &&
+          position.quote && position.quote.participant && !position.quote.participant.toLowerCase().includes('jamie horton')
+        );
+      }
+      if (item.participants) {
+        item.participants = item.participants.filter((participant: string) => 
+          !participant.toLowerCase().includes('jamie horton')
+        );
+      }
+      return item;
+    };
+
+    analysis.keyThemes = analysis.keyThemes.map(filterJamieHorton);
+    analysis.disagreements = analysis.disagreements.map(filterJamieHorton);
 
     console.log('Successfully parsed analysis with', analysis.keyThemes.length, 'themes and', analysis.disagreements.length, 'disagreements');
 
