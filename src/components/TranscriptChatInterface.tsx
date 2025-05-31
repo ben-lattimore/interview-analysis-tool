@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Send, MessageCircle, User, Bot, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -115,7 +116,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
 
   if (loading) {
     return (
-      <Card className="bg-white border-slate-200">
+      <Card className="bg-white border-slate-200 h-full">
         <CardContent className="p-6">
           <div className="text-slate-500 text-center">Loading chat history...</div>
         </CardContent>
@@ -124,10 +125,10 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   }
 
   return (
-    <div className="flex h-[600px] gap-4">
+    <div className="flex h-[calc(100vh-200px)] gap-4">
       {/* Conversation List Sidebar */}
-      <Card className="w-80 bg-white border-slate-200 flex flex-col">
-        <CardHeader className="pb-3">
+      <Card className="w-80 bg-white border-slate-200 flex flex-col h-full">
+        <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold text-slate-900">Conversations</CardTitle>
             <div className="flex space-x-1">
@@ -153,7 +154,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
           </div>
         </CardHeader>
         
-        <CardContent className="flex-1 p-0">
+        <CardContent className="flex-1 p-0 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="p-3 space-y-2">
               {/* New Chat Option */}
@@ -217,8 +218,8 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
       </Card>
 
       {/* Main Chat Area */}
-      <Card className="flex-1 bg-white border-slate-200 flex flex-col">
-        <CardHeader>
+      <Card className="flex-1 bg-white border-slate-200 flex flex-col h-full">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center text-lg font-semibold text-slate-900">
             <MessageCircle className="w-5 h-5 mr-2 text-slate-600" />
             {isNewConversation ? "New Conversation" : "Conversation"}
@@ -228,7 +229,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="flex-1 flex flex-col p-0">
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
@@ -325,7 +326,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="border-t border-slate-200 p-4">
+          <div className="border-t border-slate-200 p-4 flex-shrink-0">
             <div className="flex space-x-2">
               <Textarea
                 value={currentMessage}

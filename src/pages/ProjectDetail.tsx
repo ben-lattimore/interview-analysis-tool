@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, FileText, AlertTriangle, MessageCircle, BarChart3 } from "lucide-react";
@@ -96,9 +97,9 @@ const ProjectDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 shadow-sm">
+      <header className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -127,15 +128,15 @@ const ProjectDetail = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
           {/* Left Column - Text Input & Files */}
           <div className="lg:col-span-1 space-y-6">
             {/* Text Input Section */}
             <TranscriptTextInput onTranscriptAdd={handleTranscriptAdd} />
 
             {/* Files List */}
-            <Card className="bg-white border-slate-200">
+            <Card className="bg-white border-slate-200 flex-1">
               <CardHeader>
                 <CardTitle className="flex items-center text-lg font-semibold text-slate-900">
                   <FileText className="w-5 h-5 mr-2 text-slate-600" />
@@ -182,9 +183,9 @@ const ProjectDetail = () => {
           </div>
 
           {/* Right Column - Analysis Results and Chat */}
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="analysis" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+          <div className="lg:col-span-2 flex flex-col">
+            <Tabs defaultValue="analysis" className="w-full flex flex-col flex-1">
+              <TabsList className="grid w-full grid-cols-2 mb-6 flex-shrink-0">
                 <TabsTrigger value="analysis" className="flex items-center space-x-2">
                   <BarChart3 className="w-4 h-4" />
                   <span>Analysis Results</span>
@@ -195,11 +196,11 @@ const ProjectDetail = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="analysis">
+              <TabsContent value="analysis" className="flex-1">
                 <AIAnalysisResults transcripts={transcripts} projectId={id || ""} />
               </TabsContent>
               
-              <TabsContent value="chat">
+              <TabsContent value="chat" className="flex-1">
                 <TranscriptChatInterface projectId={id || ""} />
               </TabsContent>
             </Tabs>
