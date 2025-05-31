@@ -5,17 +5,46 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ProjectCard from "@/components/ProjectCard";
 import CreateProjectModal from "@/components/CreateProjectModal";
+import EditProjectModal from "@/components/EditProjectModal";
 import { useProjects } from "@/hooks/useProjects";
 
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  transcript_count: number;
+  created_at: string;
+  last_analyzed?: string;
+}
+
 const Index = () => {
-  const { projects, loading, createProject } = useProjects();
+  const { projects, loading, createProject, updateProject, deleteProject } = useProjects();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const handleCreateProject = async (projectData: { name: string; description: string }) => {
     const result = await createProject(projectData);
     if (result) {
       setIsCreateModalOpen(false);
     }
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateProject = async (projectId: string, projectData: { name: string; description: string }) => {
+    const result = await updateProject(projectId, projectData);
+    if (result) {
+      setIsEditModalOpen(false);
+      setEditingProject(null);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    return await deleteProject(projectId);
   };
 
   const totalTranscripts = projects.reduce((sum, project) => sum + project.transcript_count, 0);
@@ -118,7 +147,12 @@ const Index = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard 
+                  key={project.id} 
+                  project={project}
+                  onEdit={handleEditProject}
+                  onDelete={handleDeleteProject}
+                />
               ))}
             </div>
           )}
@@ -129,6 +163,16 @@ const Index = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateProject}
+      />
+
+      <EditProjectModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingProject(null);
+        }}
+        onSubmit={handleUpdateProject}
+        project={editingProject}
       />
     </div>
   );

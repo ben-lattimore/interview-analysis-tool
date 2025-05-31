@@ -1,8 +1,10 @@
 
-import { Calendar, FileText, BarChart3, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { Calendar, FileText, BarChart3, ArrowRight, Edit, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 
 interface Project {
@@ -16,10 +18,13 @@ interface Project {
 
 interface ProjectCardProps {
   project: Project;
+  onEdit?: (project: Project) => void;
+  onDelete?: (projectId: string) => void;
 }
 
-const ProjectCard = ({ project }: ProjectCardProps) => {
+const ProjectCard = ({ project, onEdit, onDelete }: ProjectCardProps) => {
   const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -34,6 +39,19 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
     navigate(`/project/${project.id}`);
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.(project);
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const success = await onDelete?.(project.id);
+    if (!success) {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card className="bg-white border-slate-200 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group">
       <CardHeader className="pb-3">
@@ -46,11 +64,52 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
               {project.description}
             </CardDescription>
           </div>
-          {project.last_analyzed && (
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
-              Analyzed
-            </Badge>
-          )}
+          <div className="flex items-center space-x-2">
+            {project.last_analyzed && (
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                Analyzed
+              </Badge>
+            )}
+            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleEdit}
+                className="h-8 w-8 text-slate-400 hover:text-blue-600"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-400 hover:text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{project.name}"? This action cannot be undone and will permanently remove all transcripts and analysis data associated with this project.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
         </div>
       </CardHeader>
       
