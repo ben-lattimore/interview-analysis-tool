@@ -18,6 +18,16 @@ interface ChatConversation {
   created_at: string;
 }
 
+// Type for database response
+interface ChatConversationDB {
+  id: string;
+  project_id: string;
+  user_message: string;
+  ai_response: string;
+  response_quotes: any; // Json type from database
+  created_at: string;
+}
+
 export const useChatConversations = (projectId: string) => {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +50,12 @@ export const useChatConversations = (projectId: string) => {
           variant: "destructive",
         });
       } else {
-        setConversations(data || []);
+        // Transform the database response to match our interface
+        const transformedData: ChatConversation[] = (data || []).map((item: ChatConversationDB) => ({
+          ...item,
+          response_quotes: Array.isArray(item.response_quotes) ? item.response_quotes : []
+        }));
+        setConversations(transformedData);
       }
     } catch (error) {
       console.error('Error:', error);
