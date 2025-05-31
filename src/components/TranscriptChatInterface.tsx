@@ -19,11 +19,9 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   const { conversations, loading, sending, sendMessage, clearConversations } = useChatConversations(projectId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Create conversation sessions based on conversation flow rather than time
+  // Create conversation sessions based on session_id
   const conversationSessions = conversations.reduce((sessions, conv) => {
-    // Use the conversation ID as session identifier for now
-    // In a proper implementation, we'd have a session_id field in the database
-    const sessionId = conv.id;
+    const sessionId = conv.session_id || conv.id;
     
     if (!sessions[sessionId]) {
       sessions[sessionId] = [];
@@ -59,21 +57,23 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   const handleSendMessage = async () => {
     if (!currentMessage.trim() || sending) return;
     
-    // Generate a new session ID for new conversations
-    if (isNewConversation) {
-      const newSessionId = `session_${Date.now()}`;
-      setCurrentSessionId(newSessionId);
-    }
-    
     const success = await sendMessage(currentMessage.trim());
     if (success) {
       setCurrentMessage("");
-      // After sending a message, we're no longer in new conversation mode
-      setIsNewConversation(false);
-      // The newest conversation will be selected automatically after refresh
-      if (conversations.length > 0) {
-        const latestConversation = conversations[conversations.length - 1];
-        setSelectedConversationId(latestConversation.id);
+      
+      // If we were in a new conversation, find the newest conversation and select it
+      if (isNewConversation) {
+        setIsNewConversation(false);
+        // Wait a moment for the conversations to update, then select the newest one
+        setTimeout(() => {
+          if (conversations.length > 0) {
+            const newestConversation = conversations.reduce((newest, conv) => 
+              new Date(conv.created_at) > new Date(newest.created_at) ? conv : newest
+            );
+            const sessionId = newestConversation.session_id || newestConversation.id;
+            setSelectedConversationId(sessionId);
+          }
+        }, 100);
       }
     }
   };
