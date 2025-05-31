@@ -14,6 +14,7 @@ interface TranscriptChatInterfaceProps {
 const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) => {
   const [currentMessage, setCurrentMessage] = useState("");
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [isNewConversation, setIsNewConversation] = useState(true);
   const { conversations, loading, sending, sendMessage, clearConversations } = useChatConversations(projectId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -28,9 +29,11 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
     return groups;
   }, [] as typeof conversations[]);
 
-  const selectedConversation = selectedConversationId 
-    ? conversationGroups.find(group => group.some(c => c.id === selectedConversationId))
-    : conversationGroups[conversationGroups.length - 1] || [];
+  const selectedConversation = isNewConversation 
+    ? [] 
+    : (selectedConversationId 
+        ? conversationGroups.find(group => group.some(c => c.id === selectedConversationId)) || []
+        : []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,12 +43,22 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
     scrollToBottom();
   }, [selectedConversation]);
 
+  // Auto-select the latest conversation when conversations are loaded (only if no manual selection made)
+  useEffect(() => {
+    if (conversationGroups.length > 0 && isNewConversation && !selectedConversationId) {
+      // Don't auto-select, keep new conversation mode
+    }
+  }, [conversationGroups, isNewConversation, selectedConversationId]);
+
   const handleSendMessage = async () => {
     if (!currentMessage.trim() || sending) return;
     
     const success = await sendMessage(currentMessage.trim());
     if (success) {
       setCurrentMessage("");
+      // After sending a message, we're no longer in new conversation mode
+      setIsNewConversation(false);
+      // The hook will refresh conversations, and we'll see the new message
     }
   };
 
@@ -58,12 +71,19 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
 
   const startNewConversation = () => {
     setSelectedConversationId(null);
+    setIsNewConversation(true);
+  };
+
+  const selectConversation = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
+    setIsNewConversation(false);
   };
 
   const handleClearAllChats = async () => {
     if (window.confirm("Are you sure you want to delete all conversations? This action cannot be undone.")) {
       await clearConversations();
       setSelectedConversationId(null);
+      setIsNewConversation(true);
     }
   };
 
@@ -114,7 +134,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
               <button
                 onClick={startNewConversation}
                 className={`w-full text-left p-3 rounded-lg transition-colors ${
-                  !selectedConversationId 
+                  isNewConversation 
                     ? 'bg-blue-100 border border-blue-200' 
                     : 'hover:bg-slate-50 border border-transparent'
                 }`}
@@ -128,12 +148,12 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
               {/* Existing Conversations */}
               {conversationGroups.map((group, index) => {
                 const firstMessage = group[0];
-                const isSelected = selectedConversationId && group.some(c => c.id === selectedConversationId);
+                const isSelected = !isNewConversation && selectedConversationId && group.some(c => c.id === selectedConversationId);
                 
                 return (
                   <button
                     key={firstMessage.id}
-                    onClick={() => setSelectedConversationId(firstMessage.id)}
+                    onClick={() => selectConversation(firstMessage.id)}
                     className={`w-full text-left p-3 rounded-lg transition-colors ${
                       isSelected 
                         ? 'bg-blue-100 border border-blue-200' 
@@ -175,7 +195,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
         <CardHeader>
           <CardTitle className="flex items-center text-lg font-semibold text-slate-900">
             <MessageCircle className="w-5 h-5 mr-2 text-slate-600" />
-            {selectedConversationId ? "Conversation" : "New Conversation"}
+            {isNewConversation ? "New Conversation" : "Conversation"}
           </CardTitle>
           <CardDescription>
             Ask questions about the transcript content and get insights with supporting quotes
