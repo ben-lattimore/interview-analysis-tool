@@ -97,6 +97,37 @@ export const useChatConversations = (projectId: string) => {
     }
   };
 
+  const clearConversations = async () => {
+    try {
+      const { error } = await supabase
+        .from('chat_conversations')
+        .delete()
+        .eq('project_id', projectId);
+
+      if (error) {
+        console.error('Error clearing conversations:', error);
+        toast({
+          title: "Error clearing conversations",
+          description: "Could not delete conversations. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        setConversations([]);
+        toast({
+          title: "Conversations cleared",
+          description: "All conversations have been deleted.",
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error clearing conversations",
+        description: "Could not delete conversations. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     if (projectId) {
       fetchConversations();
@@ -108,6 +139,7 @@ export const useChatConversations = (projectId: string) => {
     loading,
     sending,
     sendMessage,
+    clearConversations,
     refetch: fetchConversations,
   };
 };
