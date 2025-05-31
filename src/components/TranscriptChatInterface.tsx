@@ -16,6 +16,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isNewConversation, setIsNewConversation] = useState(true);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [pendingNewConversation, setPendingNewConversation] = useState(false);
   const { conversations, loading, sending, sendMessage, clearConversations } = useChatConversations(projectId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +55,19 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
     scrollToBottom();
   }, [selectedConversation]);
 
+  // Effect to handle selecting the newest conversation after sending a message in new conversation mode
+  useEffect(() => {
+    if (pendingNewConversation && conversations.length > 0) {
+      const newestConversation = conversations.reduce((newest, conv) => 
+        new Date(conv.created_at) > new Date(newest.created_at) ? conv : newest
+      );
+      const sessionId = newestConversation.session_id || newestConversation.id;
+      setSelectedConversationId(sessionId);
+      setIsNewConversation(false);
+      setPendingNewConversation(false);
+    }
+  }, [conversations, pendingNewConversation]);
+
   const handleSendMessage = async () => {
     if (!currentMessage.trim() || sending) return;
     
@@ -61,19 +75,9 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
     if (success) {
       setCurrentMessage("");
       
-      // If we were in a new conversation, find the newest conversation and select it
+      // If we were in a new conversation, mark that we're pending selection of the new conversation
       if (isNewConversation) {
-        setIsNewConversation(false);
-        // Wait a moment for the conversations to update, then select the newest one
-        setTimeout(() => {
-          if (conversations.length > 0) {
-            const newestConversation = conversations.reduce((newest, conv) => 
-              new Date(conv.created_at) > new Date(newest.created_at) ? conv : newest
-            );
-            const sessionId = newestConversation.session_id || newestConversation.id;
-            setSelectedConversationId(sessionId);
-          }
-        }, 100);
+        setPendingNewConversation(true);
       }
     }
   };
@@ -89,12 +93,14 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
     setSelectedConversationId(null);
     setIsNewConversation(true);
     setCurrentSessionId(null);
+    setPendingNewConversation(false);
   };
 
   const selectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
     setIsNewConversation(false);
     setCurrentSessionId(null);
+    setPendingNewConversation(false);
   };
 
   const handleClearAllChats = async () => {
@@ -103,6 +109,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
       setSelectedConversationId(null);
       setIsNewConversation(true);
       setCurrentSessionId(null);
+      setPendingNewConversation(false);
     }
   };
 
