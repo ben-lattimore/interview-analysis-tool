@@ -19,7 +19,7 @@ interface Project {
 interface ProjectCardProps {
   project: Project;
   onEdit?: (project: Project) => void;
-  onDelete?: (projectId: string) => void;
+  onDelete?: (projectId: string) => Promise<boolean>;
 }
 
 const ProjectCard = ({ project, onEdit, onDelete }: ProjectCardProps) => {
@@ -46,8 +46,12 @@ const ProjectCard = ({ project, onEdit, onDelete }: ProjectCardProps) => {
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    const success = await onDelete?.(project.id);
-    if (!success) {
+    try {
+      const success = await onDelete?.(project.id);
+      if (!success) {
+        setIsDeleting(false);
+      }
+    } catch (error) {
       setIsDeleting(false);
     }
   };
