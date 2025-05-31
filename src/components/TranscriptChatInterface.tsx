@@ -15,33 +15,37 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   const [currentMessage, setCurrentMessage] = useState("");
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isNewConversation, setIsNewConversation] = useState(true);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const { conversations, loading, sending, sendMessage, clearConversations } = useChatConversations(projectId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Group conversations by unique conversation sessions (within 5 minutes of each other)
-  const conversationGroups = conversations.reduce((groups, conv) => {
-    const existingGroup = groups.find(g => 
-      g.some(c => Math.abs(new Date(c.created_at).getTime() - new Date(conv.created_at).getTime()) < 5 * 60 * 1000)
-    );
-    if (existingGroup) {
-      existingGroup.push(conv);
-    } else {
-      groups.push([conv]);
+  // Create conversation sessions based on conversation flow rather than time
+  const conversationSessions = conversations.reduce((sessions, conv) => {
+    // Use the conversation ID as session identifier for now
+    // In a proper implementation, we'd have a session_id field in the database
+    const sessionId = conv.id;
+    
+    if (!sessions[sessionId]) {
+      sessions[sessionId] = [];
     }
-    return groups;
-  }, [] as typeof conversations[]);
+    sessions[sessionId].push(conv);
+    return sessions;
+  }, {} as Record<string, typeof conversations>);
 
-  // Sort conversation groups by latest message
-  const sortedConversationGroups = conversationGroups.sort((a, b) => {
-    const aLatest = Math.max(...a.map(c => new Date(c.created_at).getTime()));
-    const bLatest = Math.max(...b.map(c => new Date(c.created_at).getTime()));
-    return bLatest - aLatest;
-  });
+  // Convert to array and sort by latest message
+  const sortedSessions = Object.entries(conversationSessions)
+    .map(([sessionId, messages]) => ({
+      sessionId,
+      messages: messages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+      latestTime: Math.max(...messages.map(m => new Date(m.created_at).getTime()))
+    }))
+    .sort((a, b) => b.latestTime - a.latestTime);
 
+  // Get selected conversation messages
   const selectedConversation = isNewConversation 
     ? [] 
     : (selectedConversationId 
-        ? sortedConversationGroups.find(group => group.some(c => c.id === selectedConversationId)) || []
+        ? conversationSessions[selectedConversationId] || []
         : []);
 
   const scrollToBottom = () => {
@@ -55,12 +59,22 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   const handleSendMessage = async () => {
     if (!currentMessage.trim() || sending) return;
     
+    // Generate a new session ID for new conversations
+    if (isNewConversation) {
+      const newSessionId = `session_${Date.now()}`;
+      setCurrentSessionId(newSessionId);
+    }
+    
     const success = await sendMessage(currentMessage.trim());
     if (success) {
       setCurrentMessage("");
       // After sending a message, we're no longer in new conversation mode
       setIsNewConversation(false);
-      // The new conversation will appear in the list after refresh
+      // The newest conversation will be selected automatically after refresh
+      if (conversations.length > 0) {
+        const latestConversation = conversations[conversations.length - 1];
+        setSelectedConversationId(latestConversation.id);
+      }
     }
   };
 
@@ -74,11 +88,13 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   const startNewConversation = () => {
     setSelectedConversationId(null);
     setIsNewConversation(true);
+    setCurrentSessionId(null);
   };
 
   const selectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
     setIsNewConversation(false);
+    setCurrentSessionId(null);
   };
 
   const handleClearAllChats = async () => {
@@ -86,6 +102,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
       await clearConversations();
       setSelectedConversationId(null);
       setIsNewConversation(true);
+      setCurrentSessionId(null);
     }
   };
 
@@ -115,7 +132,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
               >
                 <Plus className="w-4 h-4" />
               </Button>
-              {sortedConversationGroups.length > 0 && (
+              {sortedSessions.length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -148,14 +165,14 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
               </button>
 
               {/* Existing Conversations */}
-              {sortedConversationGroups.map((group, index) => {
-                const firstMessage = group[0];
-                const isSelected = !isNewConversation && selectedConversationId && group.some(c => c.id === selectedConversationId);
+              {sortedSessions.map((session, index) => {
+                const firstMessage = session.messages[0];
+                const isSelected = !isNewConversation && selectedConversationId === session.sessionId;
                 
                 return (
                   <button
-                    key={firstMessage.id}
-                    onClick={() => selectConversation(firstMessage.id)}
+                    key={session.sessionId}
+                    onClick={() => selectConversation(session.sessionId)}
                     className={`w-full text-left p-3 rounded-lg transition-colors ${
                       isSelected 
                         ? 'bg-blue-100 border border-blue-200' 
@@ -170,7 +187,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
                       </p>
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-slate-500">
-                          {group.length} message{group.length > 1 ? 's' : ''}
+                          {session.messages.length} message{session.messages.length > 1 ? 's' : ''}
                         </p>
                         <p className="text-xs text-slate-400">
                           {new Date(firstMessage.created_at).toLocaleDateString()}
@@ -181,7 +198,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
                 );
               })}
 
-              {sortedConversationGroups.length === 0 && (
+              {sortedSessions.length === 0 && (
                 <div className="text-center py-8 text-slate-400">
                   <MessageCircle className="w-8 h-8 mx-auto mb-2" />
                   <p className="text-sm">No conversations yet</p>
@@ -220,7 +237,9 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
                   </div>
                 </div>
               ) : (
-                selectedConversation.map((conversation) => (
+                selectedConversation
+                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                  .map((conversation) => (
                   <div key={conversation.id} className="space-y-3">
                     {/* User Message */}
                     <div className="flex items-start space-x-3">

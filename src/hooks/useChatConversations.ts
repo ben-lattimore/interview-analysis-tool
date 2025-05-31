@@ -16,6 +16,7 @@ interface ChatConversation {
   ai_response: string;
   response_quotes: ChatQuote[];
   created_at: string;
+  session_id?: string;
 }
 
 // Type for database response
@@ -26,6 +27,7 @@ interface ChatConversationDB {
   ai_response: string;
   response_quotes: any; // Json type from database
   created_at: string;
+  session_id?: string;
 }
 
 export const useChatConversations = (projectId: string) => {
