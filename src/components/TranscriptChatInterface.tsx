@@ -18,9 +18,11 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
   const { conversations, loading, sending, sendMessage, clearConversations } = useChatConversations(projectId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Group conversations by unique conversation sessions
+  // Group conversations by unique conversation sessions (within 5 minutes of each other)
   const conversationGroups = conversations.reduce((groups, conv) => {
-    const existingGroup = groups.find(g => g.some(c => Math.abs(new Date(c.created_at).getTime() - new Date(conv.created_at).getTime()) < 5 * 60 * 1000));
+    const existingGroup = groups.find(g => 
+      g.some(c => Math.abs(new Date(c.created_at).getTime() - new Date(conv.created_at).getTime()) < 5 * 60 * 1000)
+    );
     if (existingGroup) {
       existingGroup.push(conv);
     } else {
@@ -29,10 +31,17 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
     return groups;
   }, [] as typeof conversations[]);
 
+  // Sort conversation groups by latest message
+  const sortedConversationGroups = conversationGroups.sort((a, b) => {
+    const aLatest = Math.max(...a.map(c => new Date(c.created_at).getTime()));
+    const bLatest = Math.max(...b.map(c => new Date(c.created_at).getTime()));
+    return bLatest - aLatest;
+  });
+
   const selectedConversation = isNewConversation 
     ? [] 
     : (selectedConversationId 
-        ? conversationGroups.find(group => group.some(c => c.id === selectedConversationId)) || []
+        ? sortedConversationGroups.find(group => group.some(c => c.id === selectedConversationId)) || []
         : []);
 
   const scrollToBottom = () => {
@@ -43,13 +52,6 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
     scrollToBottom();
   }, [selectedConversation]);
 
-  // Auto-select the latest conversation when conversations are loaded (only if no manual selection made)
-  useEffect(() => {
-    if (conversationGroups.length > 0 && isNewConversation && !selectedConversationId) {
-      // Don't auto-select, keep new conversation mode
-    }
-  }, [conversationGroups, isNewConversation, selectedConversationId]);
-
   const handleSendMessage = async () => {
     if (!currentMessage.trim() || sending) return;
     
@@ -58,7 +60,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
       setCurrentMessage("");
       // After sending a message, we're no longer in new conversation mode
       setIsNewConversation(false);
-      // The hook will refresh conversations, and we'll see the new message
+      // The new conversation will appear in the list after refresh
     }
   };
 
@@ -113,7 +115,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
               >
                 <Plus className="w-4 h-4" />
               </Button>
-              {conversationGroups.length > 0 && (
+              {sortedConversationGroups.length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -146,7 +148,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
               </button>
 
               {/* Existing Conversations */}
-              {conversationGroups.map((group, index) => {
+              {sortedConversationGroups.map((group, index) => {
                 const firstMessage = group[0];
                 const isSelected = !isNewConversation && selectedConversationId && group.some(c => c.id === selectedConversationId);
                 
@@ -179,7 +181,7 @@ const TranscriptChatInterface = ({ projectId }: TranscriptChatInterfaceProps) =>
                 );
               })}
 
-              {conversationGroups.length === 0 && (
+              {sortedConversationGroups.length === 0 && (
                 <div className="text-center py-8 text-slate-400">
                   <MessageCircle className="w-8 h-8 mx-auto mb-2" />
                   <p className="text-sm">No conversations yet</p>
