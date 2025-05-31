@@ -1,11 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, AlertTriangle } from "lucide-react";
+import { ArrowLeft, FileText, AlertTriangle, MessageCircle, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AIAnalysisResults from "@/components/AIAnalysisResults";
+import TranscriptChatInterface from "@/components/TranscriptChatInterface";
 import { useToast } from "@/hooks/use-toast";
 import TranscriptTextInput from "@/components/TranscriptTextInput";
 import { useTranscripts } from "@/hooks/useTranscripts";
@@ -180,9 +182,28 @@ const ProjectDetail = () => {
             </Card>
           </div>
 
-          {/* Right Column - AI Analysis Results */}
+          {/* Right Column - Analysis Results and Chat */}
           <div className="lg:col-span-2">
-            <AIAnalysisResults transcripts={transcripts} projectId={id || ""} />
+            <Tabs defaultValue="analysis" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="analysis" className="flex items-center space-x-2">
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Analysis Results</span>
+                </TabsTrigger>
+                <TabsTrigger value="chat" className="flex items-center space-x-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Chat with Transcripts</span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="analysis">
+                <AIAnalysisResults transcripts={transcripts} projectId={id || ""} />
+              </TabsContent>
+              
+              <TabsContent value="chat">
+                <TranscriptChatInterface projectId={id || ""} />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </main>

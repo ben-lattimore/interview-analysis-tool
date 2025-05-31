@@ -47,6 +47,41 @@ export type Database = {
           },
         ]
       }
+      chat_conversations: {
+        Row: {
+          ai_response: string
+          created_at: string
+          id: string
+          project_id: string
+          response_quotes: Json | null
+          user_message: string
+        }
+        Insert: {
+          ai_response: string
+          created_at?: string
+          id?: string
+          project_id: string
+          response_quotes?: Json | null
+          user_message: string
+        }
+        Update: {
+          ai_response?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          response_quotes?: Json | null
+          user_message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
