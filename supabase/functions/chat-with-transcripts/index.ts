@@ -57,16 +57,16 @@ serve(async (req) => {
       `=== ${t.filename} ===\n${t.content}`
     ).join('\n\n');
 
-    // Call Gemini API
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!geminiApiKey) {
+    // Call OpenAI API
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiApiKey) {
       return new Response(
-        JSON.stringify({ error: 'Gemini API key not configured' }),
+        JSON.stringify({ error: 'OpenAI API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const prompt = `You are an AI assistant that helps users understand and explore interview transcripts. You have access to interview transcripts and can answer questions about their content.
+    const systemPrompt = `You are an AI assistant that helps users understand and explore interview transcripts. You have access to interview transcripts and can answer questions about their content.
 
 CRITICAL FILTERING RULE: You must completely ignore and exclude any statements, quotes, or references from "Jamie Horton" (including variations like "Jamie", "Horton", etc.). Jamie Horton is the interviewer and should never appear in your responses, quotes, or analysis.
 
@@ -87,35 +87,33 @@ Format your response as JSON with this structure:
   ]
 }
 
-User's question: ${question}
-
-Transcript content:
-${transcriptContent}
-
 Remember: Completely exclude Jamie Horton from all quotes, references, and analysis.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        }
+        model: 'gpt-4.1',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: `User's question: ${question}\n\nTranscript content:\n${transcriptContent}`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2048,
       }),
     });
 
     if (!response.ok) {
-      console.error('Gemini API error:', response.status, await response.text());
+      console.error('OpenAI API error:', response.status, await response.text());
       return new Response(
         JSON.stringify({ error: 'Failed to generate AI response' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -123,7 +121,7 @@ Remember: Completely exclude Jamie Horton from all quotes, references, and analy
     }
 
     const aiResult = await response.json();
-    const aiText = aiResult.candidates?.[0]?.content?.parts?.[0]?.text;
+    const aiText = aiResult.choices?.[0]?.message?.content;
 
     if (!aiText) {
       return new Response(

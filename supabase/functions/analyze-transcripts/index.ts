@@ -15,10 +15,10 @@ serve(async (req) => {
 
   try {
     const { transcripts } = await req.json();
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
 
-    if (!geminiApiKey) {
-      throw new Error('GEMINI_API_KEY not found');
+    if (!openaiApiKey) {
+      throw new Error('OPENAI_API_KEY not found');
     }
 
     if (!transcripts || !Array.isArray(transcripts) || transcripts.length === 0) {
@@ -191,43 +191,46 @@ ${combinedContent}
 
 Return only the JSON response, no additional text.`;
 
-    console.log('Sending request to Gemini API...');
+    console.log('Sending request to OpenAI API...');
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.3,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 4096,
-        }
+        model: 'gpt-4.1',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 4096,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', errorText);
-      throw new Error(`Gemini API error: ${response.status} ${errorText}`);
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Gemini response received');
+    console.log('OpenAI response received');
 
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-      throw new Error('Invalid response from Gemini API');
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from OpenAI API');
     }
 
-    const analysisText = data.candidates[0].content.parts[0].text;
-    console.log('Raw response from Gemini:', analysisText.substring(0, 500) + '...');
+    const analysisText = data.choices[0].message.content;
+    console.log('Raw response from OpenAI:', analysisText.substring(0, 500) + '...');
     
     // Try to parse the JSON response with improved logic
     let analysis;
