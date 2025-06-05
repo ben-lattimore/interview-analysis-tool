@@ -191,6 +191,12 @@ const ProjectDetail = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Project Context Display */}
+            <ProjectContextDisplay 
+              context={context}
+              loading={contextLoading}
+            />
           </div>
 
           {/* Right Column - Analysis Results and Chat */}
