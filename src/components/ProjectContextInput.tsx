@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,10 +13,17 @@ interface ProjectContextInputProps {
 }
 
 const ProjectContextInput = ({ projectId, initialContext = "", onContextSave }: ProjectContextInputProps) => {
-  const [context, setContext] = useState(initialContext);
+  const [context, setContext] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Reset the input when initialContext changes (after successful save)
+  useEffect(() => {
+    setContext("");
+  }, [initialContext]);
+
   const handleSave = async () => {
+    if (!context.trim()) return;
+    
     setSaving(true);
     const success = await onContextSave(context.trim());
     if (success) {
@@ -55,7 +62,7 @@ const ProjectContextInput = ({ projectId, initialContext = "", onContextSave }: 
           <Button
             onClick={handleSave}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            disabled={saving}
+            disabled={saving || !context.trim()}
           >
             <Save className="w-4 h-4 mr-2" />
             {saving ? "Saving..." : "Save Context"}

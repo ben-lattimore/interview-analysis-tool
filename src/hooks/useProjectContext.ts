@@ -36,9 +36,12 @@ export const useProjectContext = (projectId: string) => {
 
   const saveContext = async (newContext: string) => {
     try {
+      // Append the new context to existing context
+      const updatedContext = context ? `${context}\n\n---\n\n${newContext}` : newContext;
+      
       const { error } = await supabase
         .from('projects')
-        .update({ context: newContext } as any)
+        .update({ context: updatedContext } as any)
         .eq('id', projectId);
 
       if (error) {
@@ -50,7 +53,7 @@ export const useProjectContext = (projectId: string) => {
         });
         return false;
       } else {
-        setContext(newContext);
+        setContext(updatedContext);
         toast({
           title: "Context saved successfully",
           description: "Your project context has been updated.",
