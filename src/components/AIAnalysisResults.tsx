@@ -284,7 +284,7 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                     <Quote className="w-4 h-4 mr-2 text-slate-400" />
                     Key Quotes
                   </h4>
-                  {theme.quotes?.map((quote, quoteIndex) => (
+                  {theme.quotes?.slice(0, 3).map((quote, quoteIndex) => (
                     <div key={quoteIndex} className="border-l-4 border-blue-200 pl-4">
                       <blockquote className="italic text-slate-700 text-sm mb-2">
                         "{quote.text}"
@@ -299,6 +299,11 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                       )}
                     </div>
                   ))}
+                  {theme.quotes && theme.quotes.length > 3 && (
+                    <p className="text-xs text-slate-500 italic">
+                      And {theme.quotes.length - 3} more mentions...
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
