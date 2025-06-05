@@ -79,21 +79,38 @@ serve(async (req) => {
 
 CRITICAL FILTERING RULE: You must completely ignore and exclude any statements, quotes, or references from "Jamie Horton" (including variations like "Jamie", "Horton", etc.). Jamie Horton is the interviewer and should never appear in your responses, quotes, or analysis.`;
 
-    // Add project context if available
+    // Enhanced project context integration
     if (projectContext.trim()) {
       systemPrompt += `
 
-PROJECT CONTEXT: The researcher has provided the following context for this project. Use this context to better understand the research objectives and tailor your responses accordingly:
+## 🎯 PRIMARY RESEARCH CONTEXT - CRITICAL PRIORITY
 
+**ABSOLUTELY CRITICAL**: The researcher has provided specific context and research objectives that MUST be your primary lens for answering questions. This context takes absolute precedence and should guide every aspect of your response.
+
+**PROJECT CONTEXT:**
 ${projectContext}
 
-IMPORTANT: Keep this context in mind when answering questions and analyzing the transcripts.`;
+**MANDATORY REQUIREMENTS**:
+1. **INTERPRET ALL QUESTIONS** through the lens of this research context first
+2. **PRIORITIZE INFORMATION** that directly relates to the research objectives outlined above
+3. **STRUCTURE RESPONSES** to address how the transcript content relates to the context
+4. **SEARCH ACTIVELY** for content that addresses the research questions or objectives mentioned
+5. **WEIGHT HEAVILY** any information that aligns with the provided context
+6. **REFERENCE THE CONTEXT** when relevant to help frame your answers
+
+**CONTEXT-DRIVEN RESPONSE APPROACH**:
+- Always consider how your answer relates to the research objectives in the context
+- Prioritize quotes and information that address the specific research focus
+- Frame your responses within the research framework provided
+- Connect transcript findings to the broader research questions outlined in the context
+
+**REMEMBER**: This context is not just background information - it defines the research framework you should use to interpret and respond to all questions. Every answer should be filtered through this contextual lens.`;
     }
 
     systemPrompt += `
 
 Your task is to answer the user's question based on the transcript content. Provide:
-1. A clear, conversational answer to their question
+1. A clear, conversational answer to their question${projectContext.trim() ? ' (always considering the project context provided above)' : ''}
 2. Relevant quotes from the transcripts to support your answer (exclude Jamie Horton completely)
 3. Context about which participants said what
 
@@ -111,6 +128,18 @@ Format your response as JSON with this structure:
 
 Remember: Completely exclude Jamie Horton from all quotes, references, and analysis.`;
 
+    const userPrompt = projectContext.trim() 
+      ? `IMPORTANT: Remember to interpret this question through the research context provided in the system prompt. Focus on how the transcripts address the research objectives outlined in the project context.
+
+User's question: ${question}
+
+Transcript content:
+${transcriptContent}`
+      : `User's question: ${question}
+
+Transcript content:
+${transcriptContent}`;
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -126,7 +155,7 @@ Remember: Completely exclude Jamie Horton from all quotes, references, and analy
           },
           {
             role: 'user',
-            content: `User's question: ${question}\n\nTranscript content:\n${transcriptContent}`
+            content: userPrompt
           }
         ],
         temperature: 0.7,
