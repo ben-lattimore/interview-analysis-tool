@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { TrendingUp, AlertTriangle, Users, BookOpen, Quote, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -246,14 +245,14 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                     <Dialog>
                       <DialogTrigger asChild>
                         <Badge variant="outline" className="border-slate-300 cursor-pointer hover:bg-slate-50">
-                          {theme.mentions} mentions
+                          {theme.quotes?.length || 0} mentions
                         </Badge>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>All Mentions: {theme.title}</DialogTitle>
                           <DialogDescription>
-                            Found {theme.mentions} mentions of this theme across your transcripts
+                            Found {theme.quotes?.length || 0} mentions of this theme across your transcripts
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 mt-4">
