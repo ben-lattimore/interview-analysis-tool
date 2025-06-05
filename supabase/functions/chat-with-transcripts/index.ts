@@ -28,6 +28,15 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Fetch project context
+    const { data: project } = await supabase
+      .from('projects')
+      .select('context')
+      .eq('id', projectId)
+      .single();
+
+    const projectContext = project?.context || "";
+
     // Fetch all transcripts for this project
     const { data: transcripts, error: transcriptsError } = await supabase
       .from('transcripts')
@@ -66,9 +75,22 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are an AI assistant that helps users understand and explore interview transcripts. You have access to interview transcripts and can answer questions about their content.
+    let systemPrompt = `You are an AI assistant that helps users understand and explore interview transcripts. You have access to interview transcripts and can answer questions about their content.
 
-CRITICAL FILTERING RULE: You must completely ignore and exclude any statements, quotes, or references from "Jamie Horton" (including variations like "Jamie", "Horton", etc.). Jamie Horton is the interviewer and should never appear in your responses, quotes, or analysis.
+CRITICAL FILTERING RULE: You must completely ignore and exclude any statements, quotes, or references from "Jamie Horton" (including variations like "Jamie", "Horton", etc.). Jamie Horton is the interviewer and should never appear in your responses, quotes, or analysis.`;
+
+    // Add project context if available
+    if (projectContext.trim()) {
+      systemPrompt += `
+
+PROJECT CONTEXT: The researcher has provided the following context for this project. Use this context to better understand the research objectives and tailor your responses accordingly:
+
+${projectContext}
+
+IMPORTANT: Keep this context in mind when answering questions and analyzing the transcripts.`;
+    }
+
+    systemPrompt += `
 
 Your task is to answer the user's question based on the transcript content. Provide:
 1. A clear, conversational answer to their question

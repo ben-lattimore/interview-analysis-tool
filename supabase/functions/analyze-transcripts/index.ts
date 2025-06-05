@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,6 +24,25 @@ serve(async (req) => {
 
     if (!transcripts || !Array.isArray(transcripts) || transcripts.length === 0) {
       throw new Error('No transcripts provided');
+    }
+
+    // Initialize Supabase client to get project context
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Get the project ID from the first transcript
+    const projectId = transcripts[0]?.project_id;
+    let projectContext = "";
+
+    if (projectId) {
+      const { data: project } = await supabase
+        .from('projects')
+        .select('context')
+        .eq('id', projectId)
+        .single();
+      
+      projectContext = project?.context || "";
     }
 
     // Combine all transcript content
@@ -71,6 +91,16 @@ Jamie Horton is conducting these interviews as a researcher. You MUST:
 
 ALL variations must be completely excluded from analysis.
 
+## PROJECT CONTEXT PRIORITY
+
+**CRITICAL**: If project context is provided, use it to guide your analysis. The context may include:
+- Specific research questions or focus areas
+- Background information about the project
+- Particular themes the researcher wants to explore
+- Additional instructions for analysis
+
+Always incorporate the project context into your analysis approach and prioritize themes that align with the provided context.
+
 ## Analysis Framework
 
 ### Key Themes Identification
@@ -80,6 +110,7 @@ When identifying key themes:
 - Include participant attribution for each quote: [Participant Name]: "exact quote"
 - **COMPLETELY EXCLUDE ALL QUOTES FROM JAMIE HORTON OR ANY INTERVIEWER**
 - Organize themes by frequency and significance
+- **PRIORITIZE themes that align with the project context if provided**
 
 ### Areas of Disagreement Identification  
 When identifying disagreements:
@@ -175,13 +206,26 @@ Before submitting your response, you MUST verify:
 
 Remember: Your role is to provide accurate, evidence-based analysis that researchers can confidently use in their reports. Jamie Horton is the researcher conducting the interviews - his voice should be completely excluded from the analysis. When in doubt, acknowledge limitations rather than risk inaccuracy.`;
 
-    const prompt = `${systemPrompt}
+    let contextualPrompt = `${systemPrompt}
 
 Analyze the following interview transcripts and provide a structured analysis in JSON format. 
 
 **CRITICAL REMINDER**: Jamie Horton is the interviewer/researcher. Do NOT include any of his quotes, statements, or perspectives in your analysis. Completely ignore everything Jamie Horton says. Only analyze the actual interview participants/subjects.
 
-**BEFORE YOU START**: Scan through the transcripts and identify who Jamie Horton is (usually the interviewer asking questions). Then completely ignore all of his contributions to the conversation.
+**BEFORE YOU START**: Scan through the transcripts and identify who Jamie Horton is (usually the interviewer asking questions). Then completely ignore all of his contributions to the conversation.`;
+
+    // Add project context if available
+    if (projectContext.trim()) {
+      contextualPrompt += `
+
+**PROJECT CONTEXT**: The researcher has provided the following context for this analysis. Use this to guide your analysis and prioritize relevant themes:
+
+${projectContext}
+
+**IMPORTANT**: Incorporate this context into your analysis approach and ensure your findings align with the research objectives outlined above.`;
+    }
+
+    contextualPrompt += `
 
 Transcripts to analyze:
 
@@ -208,7 +252,7 @@ Return only the JSON response, no additional text.`;
           },
           {
             role: 'user',
-            content: prompt
+            content: contextualPrompt
           }
         ],
         temperature: 0.3,

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, FileText, AlertTriangle, MessageCircle, BarChart3 } from "lucide-react";
@@ -10,7 +9,9 @@ import AIAnalysisResults from "@/components/AIAnalysisResults";
 import TranscriptChatInterface from "@/components/TranscriptChatInterface";
 import { useToast } from "@/hooks/use-toast";
 import TranscriptTextInput from "@/components/TranscriptTextInput";
+import ProjectContextInput from "@/components/ProjectContextInput";
 import { useTranscripts } from "@/hooks/useTranscripts";
+import { useProjectContext } from "@/hooks/useProjectContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Project {
@@ -30,6 +31,7 @@ const ProjectDetail = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [projectLoading, setProjectLoading] = useState(true);
   const { transcripts, loading: transcriptsLoading, addTranscript, deleteTranscript } = useTranscripts(id || "");
+  const { context, loading: contextLoading, saveContext } = useProjectContext(id || "");
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -130,8 +132,15 @@ const ProjectDetail = () => {
 
       <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
-          {/* Left Column - Text Input & Files */}
+          {/* Left Column - Context, Text Input & Files */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Project Context Section */}
+            <ProjectContextInput 
+              projectId={id || ""} 
+              initialContext={context}
+              onContextSave={saveContext}
+            />
+
             {/* Text Input Section */}
             <TranscriptTextInput onTranscriptAdd={handleTranscriptAdd} />
 
