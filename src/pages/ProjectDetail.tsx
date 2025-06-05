@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, FileText, AlertTriangle, MessageCircle, BarChart3 } from "lucide-react";
@@ -10,6 +11,7 @@ import TranscriptChatInterface from "@/components/TranscriptChatInterface";
 import { useToast } from "@/hooks/use-toast";
 import TranscriptTextInput from "@/components/TranscriptTextInput";
 import ProjectContextInput from "@/components/ProjectContextInput";
+import ProjectContextDisplay from "@/components/ProjectContextDisplay";
 import { useTranscripts } from "@/hooks/useTranscripts";
 import { useProjectContext } from "@/hooks/useProjectContext";
 import { supabase } from "@/integrations/supabase/client";

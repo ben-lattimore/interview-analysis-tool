@@ -24,7 +24,8 @@ export const useProjectContext = (projectId: string) => {
           variant: "destructive",
         });
       } else {
-        setContext(data?.context || "");
+        // Handle the case where context might not exist in the type yet
+        setContext((data as any)?.context || "");
       }
     } catch (error) {
       console.error('Error:', error);
@@ -37,7 +38,7 @@ export const useProjectContext = (projectId: string) => {
     try {
       const { error } = await supabase
         .from('projects')
-        .update({ context: newContext })
+        .update({ context: newContext } as any)
         .eq('id', projectId);
 
       if (error) {
