@@ -18,7 +18,10 @@ const ProjectContextInput = ({ projectId, initialContext = "", onContextSave }: 
 
   const handleSave = async () => {
     setSaving(true);
-    await onContextSave(context.trim());
+    const success = await onContextSave(context.trim());
+    if (success) {
+      setContext(""); // Clear the textarea after successful save
+    }
     setSaving(false);
   };
 
