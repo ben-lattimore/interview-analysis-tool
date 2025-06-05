@@ -3,11 +3,9 @@ import { TrendingUp, AlertTriangle, Users, BookOpen, Quote, Loader2, RefreshCw }
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAnalysisResults } from "@/hooks/useAnalysisResults";
-import QuoteCleanupToggle from "./QuoteCleanupToggle";
 
 interface QuoteObject {
   text: string;
@@ -243,38 +241,9 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                     <Badge className={getConfidenceColor(theme.confidence)}>
                       {Math.round(theme.confidence * 100)}% confidence
                     </Badge>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Badge variant="outline" className="border-slate-300 cursor-pointer hover:bg-slate-50">
-                          {theme.quotes?.length || 0} mentions
-                        </Badge>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>All Mentions: {theme.title}</DialogTitle>
-                          <DialogDescription>
-                            Found {theme.quotes?.length || 0} mentions of this theme across your transcripts
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 mt-4">
-                          {theme.quotes?.map((quote, quoteIndex) => (
-                            <div key={quoteIndex} className="border-l-4 border-blue-200 pl-4 py-2">
-                              <blockquote className="italic text-slate-700 text-sm mb-2">
-                                "{quote.text}"
-                              </blockquote>
-                              <p className="text-xs text-slate-500 font-medium">
-                                — {quote.participant}
-                              </p>
-                              {quote.context && (
-                                <p className="text-xs text-slate-400 mt-1">
-                                  {quote.context}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Badge variant="outline" className="border-slate-300">
+                      {theme.mentions} mentions
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
@@ -284,19 +253,21 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                     <Quote className="w-4 h-4 mr-2 text-slate-400" />
                     Key Quotes
                   </h4>
-                  {theme.quotes?.slice(0, 3).map((quote, quoteIndex) => (
-                    <QuoteCleanupToggle
-                      key={quoteIndex}
-                      originalQuote={quote.text}
-                      participant={quote.participant}
-                      context={quote.context}
-                    />
+                  {theme.quotes?.map((quote, quoteIndex) => (
+                    <div key={quoteIndex} className="border-l-4 border-blue-200 pl-4">
+                      <blockquote className="italic text-slate-700 text-sm mb-2">
+                        "{quote.text}"
+                      </blockquote>
+                      <p className="text-xs text-slate-500 font-medium">
+                        — {quote.participant}
+                      </p>
+                      {quote.context && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          {quote.context}
+                        </p>
+                      )}
+                    </div>
                   ))}
-                  {theme.quotes && theme.quotes.length > 3 && (
-                    <p className="text-xs text-slate-500 italic">
-                      And {theme.quotes.length - 3} more mentions...
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
