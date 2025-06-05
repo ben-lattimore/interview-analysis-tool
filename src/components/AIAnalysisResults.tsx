@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAnalysisResults } from "@/hooks/useAnalysisResults";
+import QuoteCleanupToggle from "./QuoteCleanupToggle";
 
 interface QuoteObject {
   text: string;
@@ -284,19 +285,12 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                     Key Quotes
                   </h4>
                   {theme.quotes?.slice(0, 3).map((quote, quoteIndex) => (
-                    <div key={quoteIndex} className="border-l-4 border-blue-200 pl-4">
-                      <blockquote className="italic text-slate-700 text-sm mb-2">
-                        "{quote.text}"
-                      </blockquote>
-                      <p className="text-xs text-slate-500 font-medium">
-                        — {quote.participant}
-                      </p>
-                      {quote.context && (
-                        <p className="text-xs text-slate-400 mt-1">
-                          {quote.context}
-                        </p>
-                      )}
-                    </div>
+                    <QuoteCleanupToggle
+                      key={quoteIndex}
+                      originalQuote={quote.text}
+                      participant={quote.participant}
+                      context={quote.context}
+                    />
                   ))}
                   {theme.quotes && theme.quotes.length > 3 && (
                     <p className="text-xs text-slate-500 italic">
