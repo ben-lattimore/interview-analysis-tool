@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { TrendingUp, AlertTriangle, Users, BookOpen, Quote, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAnalysisResults } from "@/hooks/useAnalysisResults";
@@ -241,9 +243,38 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                     <Badge className={getConfidenceColor(theme.confidence)}>
                       {Math.round(theme.confidence * 100)}% confidence
                     </Badge>
-                    <Badge variant="outline" className="border-slate-300">
-                      {theme.mentions} mentions
-                    </Badge>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Badge variant="outline" className="border-slate-300 cursor-pointer hover:bg-slate-50">
+                          {theme.mentions} mentions
+                        </Badge>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>All Mentions: {theme.title}</DialogTitle>
+                          <DialogDescription>
+                            Found {theme.mentions} mentions of this theme across your transcripts
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 mt-4">
+                          {theme.quotes?.map((quote, quoteIndex) => (
+                            <div key={quoteIndex} className="border-l-4 border-blue-200 pl-4 py-2">
+                              <blockquote className="italic text-slate-700 text-sm mb-2">
+                                "{quote.text}"
+                              </blockquote>
+                              <p className="text-xs text-slate-500 font-medium">
+                                — {quote.participant}
+                              </p>
+                              {quote.context && (
+                                <p className="text-xs text-slate-400 mt-1">
+                                  {quote.context}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </CardHeader>
