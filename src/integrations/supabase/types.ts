@@ -108,7 +108,6 @@ export type Database = {
       }
       projects: {
         Row: {
-          context: string | null
           created_at: string
           description: string | null
           id: string
@@ -118,7 +117,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          context?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -128,7 +126,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          context?: string | null
           created_at?: string
           description?: string | null
           id?: string

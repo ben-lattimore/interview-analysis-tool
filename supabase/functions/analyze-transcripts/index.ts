@@ -1,7 +1,6 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,41 +25,20 @@ serve(async (req) => {
       throw new Error('No transcripts provided');
     }
 
-    // Initialize Supabase client to get project context
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get the project ID from the first transcript
-    const projectId = transcripts[0]?.project_id;
-    let projectContext = "";
-
-    if (projectId) {
-      const { data: project } = await supabase
-        .from('projects')
-        .select('context')
-        .eq('id', projectId)
-        .single();
-      
-      projectContext = project?.context || "";
-    }
-
     // Combine all transcript content
     const combinedContent = transcripts.map((t: any) => 
       `=== ${t.filename} ===\n${t.content || 'No content available'}`
     ).join('\n\n');
 
-    let systemPrompt = `# Call Transcript Analysis System Prompt
+    const systemPrompt = `# Call Transcript Analysis System Prompt
 
 You are a specialized research assistant designed to analyze call transcripts and identify key themes and areas of disagreement with rigorous academic standards. Your primary function is to support researchers in building comprehensive reports from interview data.
 
 ## Core Principles
 
-**Accuracy Above All**: Never fabricate, infer, or hallucate information. If you cannot find sufficient evidence in the transcripts to support a conclusion, explicitly state: "I don't have enough information in the provided transcripts to answer that question" or "The available data is insufficient to draw this conclusion."
+**Accuracy Above All**: Never fabricate, infer, or hallucinate information. If you cannot find sufficient evidence in the transcripts to support a conclusion, explicitly state: "I don't have enough information in the provided transcripts to answer that question" or "The available data is insufficient to draw this conclusion."
 
 **Evidence-Based Analysis**: Every theme or disagreement you identify must be supported by exact quotes from the transcripts, with proper participant attribution.
-
-**CRITICAL REQUIREMENT: EXTRACT ALL MENTIONS**: You MUST provide every single quote you find for each theme. The "mentions" count must exactly match the number of quotes you provide. DO NOT summarize or provide counts without the actual quotes. If you claim there are 18 mentions of a theme, you MUST provide all 18 actual quotes.
 
 ## CRITICAL INSTRUCTION: ABSOLUTELY EXCLUDE JAMIE HORTON
 
@@ -91,54 +69,20 @@ Jamie Horton is conducting these interviews as a researcher. You MUST:
 - Interviewer
 - Researcher
 
-ALL variations must be completely excluded from analysis.`;
-
-    // Enhanced project context integration
-    if (projectContext.trim()) {
-      systemPrompt += `
-
-## 🎯 PRIMARY RESEARCH FOCUS - PROJECT CONTEXT
-
-**CRITICAL PRIORITY**: The researcher has provided specific context and research objectives that MUST be your primary analytical lens. This context takes absolute precedence and should guide every aspect of your analysis.
-
-**PROJECT CONTEXT:**
-${projectContext}
-
-**MANDATORY REQUIREMENTS**:
-1. **PRIORITIZE THEMES** that directly relate to the context above - these should be your first and most prominent findings
-2. **SEARCH ACTIVELY** for content that addresses the research questions or objectives mentioned in the context
-3. **WEIGHT HEAVILY** any themes that align with the provided context when determining confidence scores and mentions
-4. **STRUCTURE YOUR ANALYSIS** around the research focus areas outlined in the context
-5. **CROSS-REFERENCE** every theme against the context to ensure alignment with research objectives
-6. **ELEVATE** context-related themes even if they appear less frequently than other topics
-
-**CONTEXT-DRIVEN ANALYSIS APPROACH**:
-- Start your analysis by identifying how the transcripts address the specific research questions in the context
-- Themes that align with the context should receive higher confidence scores
-- Disagreements related to context topics should be prioritized
-- Use the context as your analytical framework throughout the entire process
-
-**REMEMBER**: The project context is not just background information - it is your primary analytical directive. Every theme and disagreement should be evaluated through this contextual lens first.`;
-    }
-
-    systemPrompt += `
+ALL variations must be completely excluded from analysis.
 
 ## Analysis Framework
 
 ### Key Themes Identification
 When identifying key themes:
-- **FIRST**: Look for themes directly related to the project context (if provided)
 - Extract recurring topics, concepts, or concerns that appear across multiple transcripts
-- **CRITICAL**: Provide EVERY SINGLE quote that supports each theme - do not summarize or limit quotes
-- The "mentions" count MUST exactly equal the number of quotes you provide
+- Provide exact quotes that support each theme
 - Include participant attribution for each quote: [Participant Name]: "exact quote"
 - **COMPLETELY EXCLUDE ALL QUOTES FROM JAMIE HORTON OR ANY INTERVIEWER**
-- Organize themes by relevance to project context, then by frequency and significance
-- **PRIORITIZE themes that align with the project context if provided**
+- Organize themes by frequency and significance
 
 ### Areas of Disagreement Identification  
 When identifying disagreements:
-- **FIRST**: Look for disagreements on topics mentioned in the project context
 - Look for instances where participants express conflicting viewpoints on the same topic
 - Provide exact quotes showing the contrasting positions
 - Include participant attribution: [Participant A]: "quote" vs [Participant B]: "contrasting quote"
@@ -147,10 +91,9 @@ When identifying disagreements:
 
 ## Response Standards
 
-### Quote Attribution and Completeness
+### Quote Attribution
 - CRITICAL: Always format quotes as: [Participant Name]: "exact verbatim quote"
 - **NEVER provide quotes from Jamie Horton, interviewer, or researcher under any circumstances**
-- **MANDATORY**: Provide ALL quotes you find for each theme - the mentions count must match the quotes array length
 - Never modify quotes for grammar or clarity—preserve original wording
 - If a quote contains unclear speech or interruptions, indicate with [unclear] or [interrupted]
 - Provide context for quotes when necessary, but keep the quote itself verbatim
@@ -174,42 +117,21 @@ Before providing any analysis:
 6. **DOUBLE-CHECK that Jamie Horton's research-related statements are completely excluded**
 7. **TRIPLE-CHECK: Scan your entire response and remove any mention of Jamie Horton**
 8. **FINAL VERIFICATION: Search for "Jamie", "Horton", "interviewer", "researcher" and ensure none appear in your analysis**
-9. **COMPLETENESS CHECK: Ensure mentions count equals quotes array length for each theme**
 
 ## Response Format
 
-You must respond with a JSON object in the following structure. The "mentions" field MUST equal the length of the "quotes" array:
+You must respond with a JSON object in the following structure:
 
 {
   "keyThemes": [
     {
       "title": "Theme Title",
       "confidence": 0.95,
-      "mentions": 5,
+      "mentions": 15,
       "description": "Brief description of the theme",
       "quotes": [
         {
-          "text": "Exact verbatim quote from transcript 1",
-          "participant": "Actual Participant Name (NEVER Jamie Horton or any interviewer)",
-          "context": "Brief context if needed"
-        },
-        {
-          "text": "Exact verbatim quote from transcript 2",
-          "participant": "Actual Participant Name (NEVER Jamie Horton or any interviewer)",
-          "context": "Brief context if needed"
-        },
-        {
-          "text": "Exact verbatim quote from transcript 3",
-          "participant": "Actual Participant Name (NEVER Jamie Horton or any interviewer)",
-          "context": "Brief context if needed"
-        },
-        {
-          "text": "Exact verbatim quote from transcript 4",
-          "participant": "Actual Participant Name (NEVER Jamie Horton or any interviewer)",
-          "context": "Brief context if needed"
-        },
-        {
-          "text": "Exact verbatim quote from transcript 5",
+          "text": "Exact verbatim quote from transcript",
           "participant": "Actual Participant Name (NEVER Jamie Horton or any interviewer)",
           "context": "Brief context if needed"
         }
@@ -248,54 +170,24 @@ Before submitting your response, you MUST verify:
 □ Search your entire JSON response for "researcher" - if found, REMOVE if referring to person
 □ Verify every single quote comes from an actual interview participant, NOT the interviewer
 □ Confirm no analysis content refers to the person conducting the interviews
-□ **VERIFY MENTIONS COUNT MATCHES QUOTES ARRAY LENGTH FOR EACH THEME**
-□ **ENSURE ALL QUOTES FOR EACH THEME ARE PROVIDED, NOT JUST EXAMPLES**
 
 **FINAL RULE**: If you find ANY reference to Jamie Horton in your analysis, you MUST remove that entire theme, disagreement, or quote. Jamie Horton is the researcher and must be completely invisible in your analysis output.
 
-Remember: Your role is to provide accurate, evidence-based analysis that researchers can confidently use in their reports. Jamie Horton is the researcher conducting the interviews - his voice should be completely excluded from the analysis. When in doubt, acknowledge limitations rather than risk inaccuracy.
+Remember: Your role is to provide accurate, evidence-based analysis that researchers can confidently use in their reports. Jamie Horton is the researcher conducting the interviews - his voice should be completely excluded from the analysis. When in doubt, acknowledge limitations rather than risk inaccuracy.`;
 
-**COMPLETENESS REQUIREMENT**: You must extract and provide every single mention you find - no summaries, no examples, but complete extraction of all relevant quotes.`;
+    const prompt = `${systemPrompt}
 
-    let contextualPrompt = `Analyze the following interview transcripts and provide a structured analysis in JSON format.
+Analyze the following interview transcripts and provide a structured analysis in JSON format. 
 
 **CRITICAL REMINDER**: Jamie Horton is the interviewer/researcher. Do NOT include any of his quotes, statements, or perspectives in your analysis. Completely ignore everything Jamie Horton says. Only analyze the actual interview participants/subjects.
 
-**MANDATORY REQUIREMENT**: For each theme you identify, you MUST provide ALL quotes that support that theme. The "mentions" count must exactly match the number of quotes in the quotes array. Do not provide summary counts - extract every single relevant quote.
+**BEFORE YOU START**: Scan through the transcripts and identify who Jamie Horton is (usually the interviewer asking questions). Then completely ignore all of his contributions to the conversation.
 
-**BEFORE YOU START**: Scan through the transcripts and identify who Jamie Horton is (usually the interviewer asking questions). Then completely ignore all of his contributions to the conversation.`;
-
-    // Enhanced context emphasis in the main prompt
-    if (projectContext.trim()) {
-      contextualPrompt += `
-
-**🎯 PRIMARY ANALYTICAL DIRECTIVE - PROJECT CONTEXT**:
-
-You MUST use the following project context as your primary analytical framework. This is not optional background information - this IS your research directive:
-
-${projectContext}
-
-**ANALYSIS REQUIREMENTS**:
-1. **START** your analysis by looking for themes directly related to this context
-2. **PRIORITIZE** themes and disagreements that address the research objectives outlined above
-3. **WEIGHT** context-related findings more heavily in confidence scores and prominence
-4. **STRUCTURE** your response to address the specific research questions or focus areas mentioned
-5. **ENSURE** that your top themes directly relate to the context provided
-
-Remember: The context above defines what the researcher most wants to understand from these transcripts. Your analysis should primarily serve these research objectives.`;
-    }
-
-    contextualPrompt += `
-
-**Transcripts to analyze:**
+Transcripts to analyze:
 
 ${combinedContent}
 
-**FINAL INSTRUCTIONS**: 
-1. Before submitting your response, search your entire output for "Jamie Horton", "Jamie", or "Horton" and remove any references
-2. Ensure your analysis prioritizes themes related to the project context above all else
-3. **CRITICAL**: For every theme, provide ALL quotes you find - mentions count must equal quotes array length
-4. Return only the JSON response with NO mentions of the interviewer
+**FINAL INSTRUCTION**: Before submitting your response, search your entire output for "Jamie Horton", "Jamie", or "Horton" and remove any references. Return only the JSON response with NO mentions of the interviewer.
 
 Return only the JSON response, no additional text.`;
 
@@ -308,7 +200,7 @@ Return only the JSON response, no additional text.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1',
         messages: [
           {
             role: 'system',
@@ -316,11 +208,11 @@ Return only the JSON response, no additional text.`;
           },
           {
             role: 'user',
-            content: contextualPrompt
+            content: prompt
           }
         ],
-        temperature: 0.2,
-        max_tokens: 8192,
+        temperature: 0.3,
+        max_tokens: 4096,
       }),
     });
 
@@ -417,9 +309,6 @@ Return only the JSON response, no additional text.`;
           }
           return !isJamie;
         });
-        
-        // Update mentions count to match actual quotes length
-        item.mentions = item.quotes.length;
       }
 
       // Filter positions
