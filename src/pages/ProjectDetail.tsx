@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, FileText, AlertTriangle, MessageCircle, BarChart3 } from "lucide-react";
@@ -33,7 +32,7 @@ const ProjectDetail = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [projectLoading, setProjectLoading] = useState(true);
   const { transcripts, loading: transcriptsLoading, addTranscript, deleteTranscript } = useTranscripts(id || "");
-  const { context, loading: contextLoading, saveContext } = useProjectContext(id || "");
+  const { context, loading: contextLoading, saveContext, updateContext, deleteContext } = useProjectContext(id || "");
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -196,6 +195,8 @@ const ProjectDetail = () => {
             <ProjectContextDisplay 
               context={context}
               loading={contextLoading}
+              onUpdate={updateContext}
+              onDelete={deleteContext}
             />
           </div>
 

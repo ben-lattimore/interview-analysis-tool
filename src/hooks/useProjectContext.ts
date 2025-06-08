@@ -71,6 +71,74 @@ export const useProjectContext = (projectId: string) => {
     }
   };
 
+  const updateContext = async (newContext: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ context: newContext } as any)
+        .eq('id', projectId);
+
+      if (error) {
+        console.error('Error updating context:', error);
+        toast({
+          title: "Error updating context",
+          description: "Could not update project context. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      } else {
+        setContext(newContext);
+        toast({
+          title: "Context updated successfully",
+          description: "Your project context has been updated.",
+        });
+        return true;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error updating context",
+        description: "Could not update project context. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const deleteContext = async () => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ context: '' } as any)
+        .eq('id', projectId);
+
+      if (error) {
+        console.error('Error deleting context:', error);
+        toast({
+          title: "Error deleting context",
+          description: "Could not delete project context. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      } else {
+        setContext('');
+        toast({
+          title: "Context deleted successfully",
+          description: "Your project context has been deleted.",
+        });
+        return true;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error deleting context",
+        description: "Could not delete project context. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (projectId) {
       fetchContext();
@@ -81,6 +149,8 @@ export const useProjectContext = (projectId: string) => {
     context,
     loading,
     saveContext,
+    updateContext,
+    deleteContext,
     refetch: fetchContext,
   };
 };
