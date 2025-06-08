@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAnalysisResults } from "@/hooks/useAnalysisResults";
+import QuoteCleanupToggle from "./QuoteCleanupToggle";
 
 interface QuoteObject {
   text: string;
@@ -254,19 +255,12 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                     Key Quotes
                   </h4>
                   {theme.quotes?.map((quote, quoteIndex) => (
-                    <div key={quoteIndex} className="border-l-4 border-blue-200 pl-4">
-                      <blockquote className="italic text-slate-700 text-sm mb-2">
-                        "{quote.text}"
-                      </blockquote>
-                      <p className="text-xs text-slate-500 font-medium">
-                        — {quote.participant}
-                      </p>
-                      {quote.context && (
-                        <p className="text-xs text-slate-400 mt-1">
-                          {quote.context}
-                        </p>
-                      )}
-                    </div>
+                    <QuoteCleanupToggle
+                      key={quoteIndex}
+                      originalText={quote.text}
+                      participant={quote.participant}
+                      context={quote.context}
+                    />
                   ))}
                 </div>
               </CardContent>
@@ -319,17 +313,11 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                       <p className="text-sm text-slate-600 mb-3">{position.reasoning}</p>
                       {position.quote && (
                         <div className="bg-slate-50 p-3 rounded">
-                          <blockquote className="italic text-slate-700 text-sm mb-2">
-                            "{position.quote.text}"
-                          </blockquote>
-                          <p className="text-xs text-slate-500 font-medium">
-                            — {position.quote.participant}
-                          </p>
-                          {position.quote.context && (
-                            <p className="text-xs text-slate-400 mt-1">
-                              {position.quote.context}
-                            </p>
-                          )}
+                          <QuoteCleanupToggle
+                            originalText={position.quote.text}
+                            participant={position.quote.participant}
+                            context={position.quote.context}
+                          />
                         </div>
                       )}
                     </div>
