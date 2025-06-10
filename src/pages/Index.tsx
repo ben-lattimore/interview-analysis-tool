@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Plus, FileText, Users, TrendingUp, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -80,7 +81,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <img 
-                src="/lovable-uploads/242d6aab-a0c0-400d-924c-27363a6862f0.png" 
+                src="/lovable-uploads/f7ef2c7a-3162-433e-b8e4-0995781e30ee.png" 
                 alt="Cast from Clay Logo" 
                 className="w-10 h-10"
               />
