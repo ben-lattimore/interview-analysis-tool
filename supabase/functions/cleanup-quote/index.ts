@@ -47,8 +47,9 @@ serve(async (req) => {
 5. Maintain the speaker's voice and meaning exactly
 6. Keep the quote conversational and natural
 7. Do not change the core message or add new information
+8. Do not add quotation marks around the text - return only the cleaned text content
 
-Return only the cleaned quote text, nothing else.`
+Return only the cleaned quote text without any quotation marks or additional formatting.`
           },
           {
             role: 'user',
@@ -65,7 +66,10 @@ Return only the cleaned quote text, nothing else.`
     }
 
     const data = await response.json();
-    const cleanedText = data.choices[0].message.content.trim();
+    let cleanedText = data.choices[0].message.content.trim();
+
+    // Remove any surrounding quotation marks that the AI might have added
+    cleanedText = cleanedText.replace(/^["']|["']$/g, '');
 
     console.log('Original:', text);
     console.log('Cleaned:', cleanedText);
