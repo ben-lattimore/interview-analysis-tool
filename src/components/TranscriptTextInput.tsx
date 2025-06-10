@@ -28,10 +28,10 @@ const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
   };
 
   return (
-    <Card className="bg-white border-slate-200">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="flex items-center text-lg font-semibold text-slate-900">
-          <FileText className="w-5 h-5 mr-2 text-green-600" />
+        <CardTitle className="flex items-center text-lg font-semibold text-card-foreground">
+          <FileText className="w-5 h-5 mr-2 text-secondary" />
           Add Transcript Text
         </CardTitle>
         <CardDescription>
@@ -41,7 +41,7 @@ const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="filename" className="text-sm font-medium text-slate-700">
+            <Label htmlFor="filename" className="text-sm font-medium text-foreground">
               Transcript Name
             </Label>
             <Input
@@ -50,13 +50,13 @@ const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               placeholder="e.g., Interview with John Doe"
-              className="border-slate-300 focus:border-green-500 focus:ring-green-500"
+              className="border-input focus:border-secondary focus:ring-secondary"
               required
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="transcript-text" className="text-sm font-medium text-slate-700">
+            <Label htmlFor="transcript-text" className="text-sm font-medium text-foreground">
               Transcript Content
             </Label>
             <Textarea
@@ -64,7 +64,7 @@ const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
               value={transcriptText}
               onChange={(e) => setTranscriptText(e.target.value)}
               placeholder="Paste your transcript text here..."
-              className="border-slate-300 focus:border-green-500 focus:ring-green-500 resize-none"
+              className="border-input focus:border-secondary focus:ring-secondary resize-none"
               rows={10}
               required
             />
@@ -72,7 +72,8 @@ const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
           
           <Button
             type="submit"
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
+            variant="secondary"
+            className="w-full"
             disabled={!transcriptText.trim() || !filename.trim()}
           >
             <Plus className="w-4 h-4 mr-2" />
