@@ -75,7 +75,7 @@ const Auth = () => {
           className="w-10 h-10"
         />
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Interview Analysis</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Interview PANDA Analysis</h1>
           <p className="text-slate-600 text-sm">A Tool by Cast from Clay</p>
         </div>
       </div>
