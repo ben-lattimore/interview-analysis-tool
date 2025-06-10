@@ -62,9 +62,9 @@ const QuoteCleanupToggle = ({ originalText, participant, context }: QuoteCleanup
   };
 
   return (
-    <div className="border-l-4 border-blue-200 pl-4">
+    <div className="border-l-4 border-primary/30 pl-4">
       <div className="flex items-start justify-between mb-2">
-        <blockquote className="italic text-slate-700 text-sm mb-2 flex-1">
+        <blockquote className="italic text-muted-foreground text-sm mb-2 flex-1">
           "{showCleaned && cleanedText ? cleanedText : originalText}"
         </blockquote>
         <div className="flex items-center space-x-1 ml-2">
@@ -73,7 +73,7 @@ const QuoteCleanupToggle = ({ originalText, participant, context }: QuoteCleanup
               variant="ghost"
               size="sm"
               onClick={toggleVersion}
-              className="text-slate-500 hover:text-slate-700 p-1 h-auto"
+              className="text-muted-foreground hover:text-foreground p-1 h-auto"
               title={showCleaned ? "Show original" : "Show cleaned"}
             >
               <RotateCcw className="w-3 h-3" />
@@ -84,7 +84,7 @@ const QuoteCleanupToggle = ({ originalText, participant, context }: QuoteCleanup
             size="sm"
             onClick={cleanupQuote}
             disabled={loading}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-1 h-auto"
+            className="text-primary hover:text-primary hover:bg-primary/10 p-1 h-auto"
             title="Clean up quote"
           >
             {loading ? (
@@ -95,16 +95,16 @@ const QuoteCleanupToggle = ({ originalText, participant, context }: QuoteCleanup
           </Button>
         </div>
       </div>
-      <p className="text-xs text-slate-500 font-medium">
+      <p className="text-xs text-muted-foreground font-medium">
         — {participant}
       </p>
       {context && (
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-muted-foreground/80 mt-1">
           {context}
         </p>
       )}
       {showCleaned && cleanedText && (
-        <p className="text-xs text-blue-600 mt-1 font-medium">
+        <p className="text-xs text-primary mt-1 font-medium">
           ✨ AI-cleaned version
         </p>
       )}
