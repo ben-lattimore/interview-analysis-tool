@@ -79,12 +79,14 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/lovable-uploads/242d6aab-a0c0-400d-924c-27363a6862f0.png" 
+                alt="Cast from Clay Logo" 
+                className="w-10 h-10"
+              />
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">TranscriptIQ</h1>
-                <p className="text-slate-600 text-sm">Interview Analysis Platform</p>
+                <h1 className="text-2xl font-bold text-slate-900">Interview Analysis</h1>
+                <p className="text-slate-600 text-sm">A Tool by Cast from Clay</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
