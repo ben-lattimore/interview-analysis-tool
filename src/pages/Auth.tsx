@@ -69,12 +69,14 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center px-6">
       {/* Header */}
       <div className="flex items-center space-x-3 mb-8">
-        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-          <FileText className="w-6 h-6 text-white" />
-        </div>
+        <img 
+          src="/lovable-uploads/f7ef2c7a-3162-433e-b8e4-0995781e30ee.png" 
+          alt="Cast from Clay Logo" 
+          className="w-10 h-10"
+        />
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">TranscriptIQ</h1>
-          <p className="text-slate-600 text-sm">Interview Analysis Platform</p>
+          <h1 className="text-2xl font-bold text-slate-900">Interview Analysis</h1>
+          <p className="text-slate-600 text-sm">A Tool by Cast from Clay</p>
         </div>
       </div>
 
