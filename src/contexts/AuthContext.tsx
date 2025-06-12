@@ -8,9 +8,9 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  // Remove signUp from interface
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,40 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    // Check if email domain is allowed
-    if (!email.endsWith('@castfromclay.co.uk')) {
-      return { 
-        error: { 
-          message: 'Sign up is restricted to @castfromclay.co.uk email addresses only.' 
-        } 
-      };
-    }
-
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName
-        }
-      }
-    });
-
-    if (error) {
-      console.error('Sign up error:', error);
-    } else {
-      toast({
-        title: "Check your email",
-        description: "We've sent you a confirmation link to complete your registration.",
-      });
-    }
-
-    return { error };
-  };
+  // Remove signUp function
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -113,9 +80,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     loading,
-    signUp,
     signIn,
     signOut,
+    // Remove signUp from value object
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
