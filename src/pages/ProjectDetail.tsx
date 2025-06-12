@@ -203,12 +203,18 @@ const ProjectDetail = () => {
           {/* Right Column - Analysis Results and Chat */}
           <div className="lg:col-span-2 flex flex-col">
             <Tabs defaultValue="analysis" className="w-full flex flex-col flex-1">
-              <TabsList className="grid w-full grid-cols-2 mb-6 flex-shrink-0">
-                <TabsTrigger value="analysis" className="flex items-center space-x-2">
+              <TabsList className="grid w-full grid-cols-2 mb-6 flex-shrink-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200/50 dark:border-blue-700/30 shadow-lg backdrop-blur-sm">
+                <TabsTrigger 
+                  value="analysis" 
+                  className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-all duration-200 transform hover:scale-[1.02] data-[state=active]:scale-[1.02]"
+                >
                   <BarChart3 className="w-4 h-4" />
                   <span>Analysis Results</span>
                 </TabsTrigger>
-                <TabsTrigger value="chat" className="flex items-center space-x-2">
+                <TabsTrigger 
+                  value="chat" 
+                  className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 transition-all duration-200 transform hover:scale-[1.02] data-[state=active]:scale-[1.02]"
+                >
                   <MessageCircle className="w-4 h-4" />
                   <span>Chat with Transcripts</span>
                 </TabsTrigger>

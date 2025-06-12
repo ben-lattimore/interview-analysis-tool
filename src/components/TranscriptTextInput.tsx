@@ -28,7 +28,7 @@ const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
   };
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-white dark:bg-gray-900 border-border">
       <CardHeader>
         <CardTitle className="flex items-center text-lg font-semibold text-card-foreground">
           <FileText className="w-5 h-5 mr-2 text-secondary" />
@@ -72,8 +72,7 @@ const TranscriptTextInput = ({ onTranscriptAdd }: TranscriptTextInputProps) => {
           
           <Button
             type="submit"
-            variant="secondary"
-            className="w-full"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             disabled={!transcriptText.trim() || !filename.trim()}
           >
             <Plus className="w-4 h-4 mr-2" />
