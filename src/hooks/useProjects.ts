@@ -28,11 +28,15 @@ export const useProjects = () => {
         return;
       }
 
+      // Modified query to calculate transcript_count dynamically
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
+        .select(`
+          *,
+          transcript_count:transcripts(count)
+        `)
         .order('created_at', { ascending: false });
-
+  
       if (error) {
         console.error('Error fetching projects:', error);
         toast({
@@ -40,7 +44,12 @@ export const useProjects = () => {
           description: error.message || "Could not load your projects. Please try again.",
         });
       } else {
-        setProjects(data || []);
+        // Transform the data to flatten the transcript_count
+        const transformedData = data?.map(project => ({
+          ...project,
+          transcript_count: project.transcript_count?.[0]?.count || 0
+        })) || [];
+        setProjects(transformedData);
       }
     } catch (error) {
       console.error('Error:', error);
