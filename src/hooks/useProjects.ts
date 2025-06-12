@@ -19,6 +19,15 @@ export const useProjects = () => {
 
   const fetchProjects = async () => {
     try {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -28,13 +37,17 @@ export const useProjects = () => {
         console.error('Error fetching projects:', error);
         toast({
           title: "Error loading projects",
-          description: "Could not load your projects. Please try again.",
+          description: error.message || "Could not load your projects. Please try again.",
         });
       } else {
         setProjects(data || []);
       }
     } catch (error) {
       console.error('Error:', error);
+      toast({
+        title: "Unexpected error",
+        description: "An unexpected error occurred while loading projects.",
+      });
     } finally {
       setLoading(false);
     }
@@ -42,6 +55,17 @@ export const useProjects = () => {
 
   const createProject = async (projectData: { name: string; description: string }) => {
     try {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to create projects.",
+        });
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('projects')
         .insert([{
@@ -55,7 +79,7 @@ export const useProjects = () => {
         console.error('Error creating project:', error);
         toast({
           title: "Error creating project",
-          description: "Could not create project. Please try again.",
+          description: error.message || "Could not create project. Please try again.",
         });
         return null;
       } else {
@@ -68,6 +92,10 @@ export const useProjects = () => {
       }
     } catch (error) {
       console.error('Error:', error);
+      toast({
+        title: "Unexpected error",
+        description: "An unexpected error occurred. Please try again.",
+      });
       return null;
     }
   };
