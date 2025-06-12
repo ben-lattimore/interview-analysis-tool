@@ -1,55 +1,39 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
-
-serve(async (req) => {
+serve(async (req)=>{
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders
+    });
   }
-
   try {
     const { transcripts } = await req.json();
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-
     if (!openaiApiKey) {
       throw new Error('OPENAI_API_KEY not found');
     }
-
     if (!transcripts || !Array.isArray(transcripts) || transcripts.length === 0) {
       throw new Error('No transcripts provided');
     }
-
     // Initialize Supabase client to get project context
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
-
     // Get the project ID from the first transcript
     const projectId = transcripts[0]?.project_id;
     let projectContext = "";
-
     if (projectId) {
-      const { data: project } = await supabase
-        .from('projects')
-        .select('context')
-        .eq('id', projectId)
-        .single();
-      
+      const { data: project } = await supabase.from('projects').select('context').eq('id', projectId).single();
       projectContext = project?.context || "";
     }
-
     // Combine all transcript content
-    const combinedContent = transcripts.map((t: any) => 
-      `=== ${t.filename} ===\n${t.content || 'No content available'}`
-    ).join('\n\n');
-
+    const combinedContent = transcripts.map((t)=>`=== ${t.filename} ===\n${t.content || 'No content available'}`).join('\n\n');
     let systemPrompt = `# Call Transcript Analysis System Prompt
 
 You are a specialized research assistant designed to analyze call transcripts and identify key themes and areas of disagreement with rigorous academic standards. Your primary function is to support researchers in building comprehensive reports from interview data.
@@ -90,7 +74,6 @@ Jamie Horton is conducting these interviews as a researcher. You MUST:
 - Researcher
 
 ALL variations must be completely excluded from analysis.`;
-
     // Enhanced project context integration
     if (projectContext.trim()) {
       systemPrompt += `
@@ -118,7 +101,6 @@ ${projectContext}
 
 **REMEMBER**: The project context is not just background information - it is your primary analytical directive. Every theme and disagreement should be evaluated through this contextual lens first.`;
     }
-
     systemPrompt += `
 
 ## Analysis Framework
@@ -227,13 +209,11 @@ Before submitting your response, you MUST verify:
 **FINAL RULE**: If you find ANY reference to Jamie Horton in your analysis, you MUST remove that entire theme, disagreement, or quote. Jamie Horton is the researcher and must be completely invisible in your analysis output.
 
 Remember: Your role is to provide accurate, evidence-based analysis that researchers can confidently use in their reports. Jamie Horton is the researcher conducting the interviews - his voice should be completely excluded from the analysis. When in doubt, acknowledge limitations rather than risk inaccuracy.`;
-
     let contextualPrompt = `Analyze the following interview transcripts and provide a structured analysis in JSON format.
 
 **CRITICAL REMINDER**: Jamie Horton is the interviewer/researcher. Do NOT include any of his quotes, statements, or perspectives in your analysis. Completely ignore everything Jamie Horton says. Only analyze the actual interview participants/subjects.
 
 **BEFORE YOU START**: Scan through the transcripts and identify who Jamie Horton is (usually the interviewer asking questions). Then completely ignore all of his contributions to the conversation.`;
-
     // Enhanced context emphasis in the main prompt
     if (projectContext.trim()) {
       contextualPrompt += `
@@ -253,7 +233,6 @@ ${projectContext}
 
 Remember: The context above defines what the researcher most wants to understand from these transcripts. Your analysis should primarily serve these research objectives.`;
     }
-
     contextualPrompt += `
 
 **Transcripts to analyze:**
@@ -266,17 +245,15 @@ ${combinedContent}
 3. Return only the JSON response with NO mentions of the interviewer
 
 Return only the JSON response, no additional text.`;
-
     console.log('Sending request to OpenAI API...');
-
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiApiKey}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'o3-mini',
         messages: [
           {
             role: 'system',
@@ -286,28 +263,21 @@ Return only the JSON response, no additional text.`;
             role: 'user',
             content: contextualPrompt
           }
-        ],
-        temperature: 0.3,
-        max_tokens: 4096,
-      }),
+        ]
+      })
     });
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', errorText);
       throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
     }
-
     const data = await response.json();
     console.log('OpenAI response received');
-
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       throw new Error('Invalid response from OpenAI API');
     }
-
     const analysisText = data.choices[0].message.content;
     console.log('Raw response from OpenAI:', analysisText.substring(0, 500) + '...');
-    
     // Try to parse the JSON response with improved logic
     let analysis;
     try {
@@ -315,11 +285,9 @@ Return only the JSON response, no additional text.`;
       analysis = JSON.parse(analysisText);
     } catch (directParseError) {
       console.log('Direct parsing failed, trying to extract JSON from markdown...');
-      
       // Try to extract JSON from markdown code blocks
       const jsonBlockRegex = /```(?:json)?\s*(\{[\s\S]*?\})\s*```/;
       const jsonMatch = analysisText.match(jsonBlockRegex);
-      
       if (jsonMatch && jsonMatch[1]) {
         try {
           analysis = JSON.parse(jsonMatch[1]);
@@ -331,7 +299,6 @@ Return only the JSON response, no additional text.`;
         // Try to find JSON object boundaries
         const startIndex = analysisText.indexOf('{');
         const lastIndex = analysisText.lastIndexOf('}');
-        
         if (startIndex !== -1 && lastIndex !== -1 && lastIndex > startIndex) {
           const jsonCandidate = analysisText.substring(startIndex, lastIndex + 1);
           try {
@@ -347,36 +314,37 @@ Return only the JSON response, no additional text.`;
         }
       }
     }
-
     // Validate the parsed analysis has required structure
     if (!analysis || typeof analysis !== 'object') {
       throw new Error('Parsed analysis is not a valid object');
     }
-
     if (!Array.isArray(analysis.keyThemes) || !Array.isArray(analysis.disagreements)) {
       throw new Error('Analysis does not contain required keyThemes and disagreements arrays');
     }
-
     // AGGRESSIVE filtering to remove ANY Jamie Horton references
-    const filterJamieHorton = (item: any) => {
+    const filterJamieHorton = (item)=>{
       // List of all possible variations of Jamie Horton's name
       const jamieVariations = [
-        'jamie horton', 'jamie', 'horton', 'j. horton', 'dr. horton', 
-        'professor horton', 'interviewer', 'researcher', 'dr horton',
-        'prof horton', 'j horton'
+        'jamie horton',
+        'jamie',
+        'horton',
+        'j. horton',
+        'dr. horton',
+        'professor horton',
+        'interviewer',
+        'researcher',
+        'dr horton',
+        'prof horton',
+        'j horton'
       ];
-      
-      const isJamieHorton = (name: string) => {
+      const isJamieHorton = (name)=>{
         if (!name) return false;
         const lowerName = name.toLowerCase().trim();
-        return jamieVariations.some(variation => 
-          lowerName.includes(variation) || variation.includes(lowerName)
-        );
+        return jamieVariations.some((variation)=>lowerName.includes(variation) || variation.includes(lowerName));
       };
-
       // Filter quotes
       if (item.quotes) {
-        item.quotes = item.quotes.filter((quote: any) => {
+        item.quotes = item.quotes.filter((quote)=>{
           const participantName = quote.participant;
           if (!participantName) return false;
           const isJamie = isJamieHorton(participantName);
@@ -386,34 +354,28 @@ Return only the JSON response, no additional text.`;
           return !isJamie;
         });
       }
-
       // Filter positions
       if (item.positions) {
-        item.positions = item.positions.filter((position: any) => {
+        item.positions = item.positions.filter((position)=>{
           const supporterName = position.supporter;
           if (!supporterName) return false;
-          
           let isJamieSupporter = isJamieHorton(supporterName);
           let isJamieQuote = false;
-          
           if (position.quote && position.quote.participant) {
             isJamieQuote = isJamieHorton(position.quote.participant);
           }
-          
           if (isJamieSupporter) {
             console.log(`Filtering out position from Jamie Horton variant supporter: "${supporterName}"`);
           }
           if (isJamieQuote) {
             console.log(`Filtering out position with Jamie Horton variant quote: "${position.quote.participant}"`);
           }
-          
           return !isJamieSupporter && !isJamieQuote;
         });
       }
-
       // Filter participants array
       if (item.participants) {
-        item.participants = item.participants.filter((participant: string) => {
+        item.participants = item.participants.filter((participant)=>{
           const isJamie = isJamieHorton(participant);
           if (isJamie) {
             console.log(`Filtering out Jamie Horton variant from participants: "${participant}"`);
@@ -421,35 +383,32 @@ Return only the JSON response, no additional text.`;
           return !isJamie;
         });
       }
-
       return item;
     };
-
     // Apply filtering
     analysis.keyThemes = analysis.keyThemes.map(filterJamieHorton);
     analysis.disagreements = analysis.disagreements.map(filterJamieHorton);
-
     // Remove themes or disagreements that have no valid quotes/positions after filtering
-    analysis.keyThemes = analysis.keyThemes.filter((theme: any) => 
-      theme.quotes && theme.quotes.length > 0
-    );
-    
-    analysis.disagreements = analysis.disagreements.filter((disagreement: any) => 
-      disagreement.positions && disagreement.positions.length > 0
-    );
-
+    analysis.keyThemes = analysis.keyThemes.filter((theme)=>theme.quotes && theme.quotes.length > 0);
+    analysis.disagreements = analysis.disagreements.filter((disagreement)=>disagreement.positions && disagreement.positions.length > 0);
     console.log('Successfully filtered analysis with', analysis.keyThemes.length, 'themes and', analysis.disagreements.length, 'disagreements');
     console.log('All Jamie Horton references should now be removed');
-
     return new Response(JSON.stringify(analysis), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
     });
-
   } catch (error) {
     console.error('Error in analyze-transcripts function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({
+      error: error.message
+    }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
     });
   }
 });
