@@ -41,7 +41,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit }: CreateProjectModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl bg-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-slate-900">
             Create New Project

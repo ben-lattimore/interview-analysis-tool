@@ -304,12 +304,7 @@ const AIAnalysisResults = ({ transcripts, projectId }: AIAnalysisResultsProps) =
                 <div className="space-y-4">
                   {disagreement.positions?.map((position, posIndex) => (
                     <div key={posIndex} className="border-l-4 border-slate-200 pl-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-slate-900">{position.stance}</h4>
-                        <Badge variant="secondary" className="text-xs">
-                          {position.supporter}
-                        </Badge>
-                      </div>
+
                       <p className="text-sm text-slate-600 mb-3">{position.reasoning}</p>
                       {position.quote && (
                         <div className="bg-slate-50 p-3 rounded">

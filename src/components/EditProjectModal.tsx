@@ -52,7 +52,7 @@ const EditProjectModal = ({ isOpen, onClose, onSubmit, project }: EditProjectMod
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-slate-900">
             Edit Project
