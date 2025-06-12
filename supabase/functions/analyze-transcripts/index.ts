@@ -276,7 +276,7 @@ Return only the JSON response, no additional text.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
